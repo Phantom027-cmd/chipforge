@@ -213,7 +213,15 @@ MIX_SPEC: dict[str, F] = {
     "echo": F("map", "Echo: {time: steps between taps (default 3 = dotted eighth), taps: [gains...]}."),
     "reverb": F("map", "Reverb: {size: seconds, decay: seconds, tone: low-pass Hz, predelay: seconds}."),
     "sidechain": F("num", "Kick sidechain release in seconds.", default=0.07, min=0.01, max=1),
+    "hf": F("num", "Master high-shelf gain above 2.5 kHz (0.95 = highs 5% quieter).", default=0.95, min=0.5, max=1.5),
+    "hf_freq": F("num", "High-shelf corner frequency in Hz.", default=2500, min=500, max=12000),
+    "ceiling": F("num", "True-peak ceiling in dBTP for the limiter.", default=-1.0, min=-12, max=0),
+    "normalize": F("bool", "Normalize to the loudness target (false = only the soft clip and ceiling).", default=True),
 }
+
+# default integrated loudness per cue type (LUFS). Quiet enough to leave room for game SFX.
+CUE_LOUDNESS = {"boss": -12, "combat": -12, "overworld": -14, "dungeon": -16, "ambience": -20, "menu": -16,
+                "shop": -15, "victory": -12, "death": -14, "gameover": -15, "credits": -14, "custom": -14}
 
 ARR_SPEC: dict[str, F] = {
     "use": F("str", "Pattern name.", required=True),
@@ -288,6 +296,10 @@ class Song:
     arrangement: list[Use]
     source: str | None = None
     raw: dict = field(default_factory=dict)
+
+    @property
+    def target_lufs(self) -> float:
+        return float(self.loudness if self.loudness is not None else CUE_LOUDNESS[self.cue])
 
     @property
     def steps_per_bar(self) -> int:

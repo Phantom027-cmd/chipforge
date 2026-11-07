@@ -15,7 +15,9 @@ chip: nes                # nes gameboy sid fm gm
 mode: enhanced           # enhanced = stereo + reverb + sub; authentic = raw hardware mono, channel limits enforced
 seed: 1
 loop: {from: A}          # true = everything loops; false = one-shot sting; {from: X} = intro before X
-ambience: {bed: cave, level: -19}      # optional environment stem, dB relative to the music
+ambience: {bed: cave, level: -19}      # factory cave forest rain wind machinery water crowd; dB under the music
+# loudness: -14          # LUFS target; default per cue (boss/combat -12, overworld -14, dungeon/menu -16 ...)
+# mix: {hf: 0.95}        # master high shelf (0.95 = highs 5% quieter), drive, low_drive, reverb: {size, decay}
 
 channels:                # name -> preset (+ vol, pan -1..1, layer, echo, reverb, duck, lp, hp, transpose, osc: clean)
   lead:  {preset: lead.pulse25, pan: 0.2}
@@ -101,6 +103,7 @@ Presets are tuned to sit together at `vol: 1`. Put the bass on the `low` bus (pr
 
 ## Workflow
 `chipforge validate song.yml` → `chipforge render song.yml -o out/` (WAV + preview with the loop
-played twice + stems + MIDI + JSON) → `chipforge analyze out/song.wav` → fix findings → repeat.
+played twice + stems + MIDI + JSON, normalized to the cue's LUFS target, -1 dBTP) →
+`chipforge analyze out/song.wav` → fix findings → repeat. `chipforge ambience cave -s 60` renders a bed alone.
 Keep intros short, end loops on the chord that leads back to the loop start, give every section a
 contrast (drop drums, add a layer, change the duty), and leave 1-4 kHz for the lead.

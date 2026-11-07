@@ -225,27 +225,33 @@ def mix_parts(song: Song, parts: list[Part], kicks: list, space: Space, enhanced
             x = space.filt(x, fx.sos("high", float(p.mix["hp"]), sr))
         if duck_env is not None and p.mix.get("duck"):
             x = x * (1 - p.mix["duck"] * duck_env)
+        key = (p.mix["bus"], f"layer{p.layer}" if stems_by == "layer" else "all")
+        bus = buses.get(key)
+        if bus is None:
+            bus = buses[key] = np.zeros((n, 2))
         if enhanced:
             if p.mix.get("echo"):
                 echo_in += x * p.mix["echo"]
             if p.mix.get("reverb"):
                 rev_in += x * p.mix["reverb"]
             pan = p.mix["pan"]
-            st = np.stack([x * (1 - pan), x * (1 + pan)], axis=1)
             if p.mix.get("width"):
-                st[:, 1] = space.delay(st[:, 1], int(p.mix["width"] * sr))
+                bus[:, 0] += x * (1 - pan)
+                bus[:, 1] += space.delay(x * (1 + pan), int(p.mix["width"] * sr))
+            else:
+                np.add(bus[:, 0], x * (1 - pan), out=bus[:, 0])
+                np.add(bus[:, 1], x * (1 + pan), out=bus[:, 1])
         else:
             prof = chips.get(song.chip)
             if prof.pan_steps:                     # e.g. Game Boy: hard left / centre / right
                 pan = float(np.round(p.mix["pan"] * (prof.pan_steps - 1) / 2) * 2 / (prof.pan_steps - 1))
-                st = np.stack([x * (1 if pan <= 0 else 0), x * (1 if pan >= 0 else 0)], axis=1)
+                if pan <= 0:
+                    bus[:, 0] += x
+                if pan >= 0:
+                    bus[:, 1] += x
             else:
-                st = np.stack([x, x], axis=1)
-        key = (p.mix["bus"], f"layer{p.layer}" if stems_by == "layer" else "all")
-        if key in buses:
-            buses[key] += st
-        else:
-            buses[key] = st
+                bus[:, 0] += x
+                bus[:, 1] += x
     out = np.zeros((n, 2))
     stems: dict[str, np.ndarray] = {}
     for bus in {b for b, _ in buses}:
@@ -273,15 +279,29 @@ def mix_parts(song: Song, parts: list[Part], kicks: list, space: Space, enhanced
     return out, stems
 
 
-def master(song: Song, x: np.ndarray, space: Space, gain: float | None = None, hp: bool = True) -> tuple[np.ndarray, float]:
-    """High-pass, soft clip, normalize (peak 0.70 for now; LUFS targets arrive with the mastering milestone)."""
+def master(song: Song, x: np.ndarray, space: Space, gain: float | None = None, hp: bool = True,
+           limit: bool = True) -> tuple[np.ndarray, float, dict]:
+    """Master chain: high-pass -> soft clip -> high shelf -> loudness normalize -> true-peak limiter.
+    With `gain` given (stems), the same gain is applied without re-measuring and without limiting."""
+    from . import loudness
     m = song.mix
     y = space.filt(x, fx.sos("high", float(m["hp"]), song.sr)) if hp else x
     y = fx.soft_clip(y, m["drive"])
-    if gain is None:
+    if m["hf"] != 1.0:
+        y = space.filt(y, fx.sos("highshelf", float(m["hf_freq"]), song.sr, gain=float(m["hf"])))
+    info: dict = {}
+    if gain is not None:
+        return y * gain, gain, info
+    if m["normalize"]:
+        y, info = loudness.normalize(y, song.sr, song.target_lufs, m["ceiling"], circular=space.circular)
+        gain = 10 ** (info["gain_db"] / 20)
+    else:
         peak = float(np.max(np.abs(y))) or 1.0
-        gain = 0.70 / peak
-    return y * gain, gain
+        gain = min(1.0, 10 ** (m["ceiling"] / 20) / peak)
+        y = y * gain
+        info = {"gain_db": round(20 * np.log10(gain), 2)}
+    info["target_lufs"] = song.target_lufs
+    return y, gain, info
 
 
 # ------------------------------------------------------------------ entry point
@@ -308,15 +328,18 @@ def render(song: Song, *, stems: bool = True) -> RenderResult:
         from . import ambience as _amb
         amb = _amb.render(song, tl, space, ctx)
         amb_level = 10 ** (song.ambience["level"] / 20)
-        g = amb_level * _rms(music.sum(1)) / (_rms(amb.sum(1)) or 1.0)   # mono-sum RMS ratio
-        amb = amb * g
+        music_rms = _rms(music.sum(1))
+        if music_rms > 1e-6:
+            amb = amb * amb_level * music_rms / (_rms(amb.sum(1)) or 1.0)   # mono-sum RMS ratio, as tuned
+        else:                                                               # ambience-only render
+            amb = amb * 0.3 / (np.max(np.abs(amb)) or 1.0)
 
     # the master high-pass is linear, so apply it per component once and sum
     music = space.filt(music, fx.sos("high", float(song.mix["hp"]), sr))
     if amb is not None:
         amb = space.filt(amb, fx.sos("high", float(song.mix["hp"]), sr))
     full = music + amb if amb is not None else music
-    mixed, gain = master(song, full, space, hp=False)
+    mixed, gain, minfo = master(song, full, space, hp=False)
     music_m = mixed if amb is None else master(song, music, space, gain, hp=False)[0]
     amb_m = master(song, amb, space, gain, hp=False)[0] if amb is not None else None
     stems_out = {k: master(song, v, space, gain, hp=False)[0] for k, v in layer_stems.items()} if stems else {}
@@ -332,7 +355,7 @@ def render(song: Song, *, stems: bool = True) -> RenderResult:
                        n_total if loop_start is not None else None, gain)
     res.seconds = time.perf_counter() - t0
     res.stats = {"notes": len(tl.events), "cache_hits": cache.hits, "cache_misses": cache.misses,
-                 "parts": len(parts), "peak": float(np.max(np.abs(mixed)))}
+                 "parts": len(parts), "peak": float(np.max(np.abs(mixed))), **minfo}
     return res
 
 

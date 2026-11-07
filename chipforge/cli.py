@@ -35,9 +35,11 @@ def cmd_render(a):
     out = a.out or str(Path(a.song).with_suffix("")) + "_out"
     paths = write_all(res, out, formats=tuple(a.format), stems=not a.no_stems, preview=not a.no_preview,
                       midi=not a.no_midi, bits=a.bits)
-    print(f"rendered {song.title!r} in {res.seconds:.2f} s  ({res.stats['notes']} events, "
-          f"cache {res.stats['cache_hits']}/{res.stats['cache_hits'] + res.stats['cache_misses']}, "
-          f"peak {res.stats['peak']:.2f})")
+    st = res.stats
+    print(f"rendered {song.title!r} in {res.seconds:.2f} s  ({st['notes']} events, "
+          f"cache {st['cache_hits']}/{st['cache_hits'] + st['cache_misses']}, "
+          f"{st.get('lufs_after', 0):.1f} LUFS (target {st.get('target_lufs', 0):.0f}), "
+          f"true peak {st.get('true_peak', 0):.1f} dBTP, limiter {st.get('limited_db', 0):.1f} dB)")
     for k, p in paths.items():
         print(f"  {k:<12} {p}")
 
@@ -51,6 +53,33 @@ def cmd_presets(a):
         for n in names:
             p = presets.get(n)
             print(f"  {n:<22} {p.get('doc', '')}")
+
+
+AMBIENCE_SONG = """chipforge: 1
+title: {title}
+cue: ambience
+tempo: 120
+key: {key}
+seed: {seed}
+ambience: {{bed: {bed}, level: 0}}
+channels: {{x: {{preset: lead.pulse25, vol: 0}}}}
+patterns: {{A: {{bars: {bars}}}}}
+arrangement: [A]
+"""
+
+
+def cmd_ambience(a):
+    """Render a seamless ambience-only loop."""
+    from .schema import loads
+    from .render import render
+    from .export import write_all
+    bars = max(1, int(round(a.seconds / 2.0)))      # 120 bpm 4/4 -> 2 s per bar
+    song = loads(AMBIENCE_SONG.format(title=f"{a.bed} ambience", key=a.key, seed=a.seed, bed=a.bed, bars=bars))
+    res = render(song, stems=False)
+    paths = write_all(res, a.out or f"{a.bed}_ambience", formats=tuple(a.format), stems=False, preview=True, midi=False)
+    print(f"rendered {a.bed} ambience, {len(res.mix) / res.sr:.1f} s loop, {res.stats.get('lufs_after', 0):.1f} LUFS")
+    for k, p in paths.items():
+        print(f"  {k:<12} {p}")
 
 
 def cmd_quickref(a):
@@ -75,8 +104,14 @@ def main(argv=None):
     p = sub.add_parser("presets", help="list instrument presets"); p.add_argument("category", nargs="?")
     p.set_defaults(fn=cmd_presets)
     p = sub.add_parser("quickref", help="print the one-page song format reference"); p.set_defaults(fn=cmd_quickref)
+    p = sub.add_parser("ambience", help="render a seamless environment loop on its own")
+    p.add_argument("bed", choices=["factory", "cave", "forest", "rain", "wind", "machinery", "water", "crowd"])
+    p.add_argument("-s", "--seconds", type=float, default=60); p.add_argument("-o", "--out")
+    p.add_argument("-k", "--key", default="C", help="key for tuned elements (hums)"); p.add_argument("--seed", type=int, default=1)
+    p.add_argument("-f", "--format", action="append", default=None)
+    p.set_defaults(fn=cmd_ambience)
     a = ap.parse_args(argv)
-    if getattr(a, "format", None) is None and a.cmd == "render":
+    if getattr(a, "format", None) is None and a.cmd in ("render", "ambience"):
         a.format = ["wav"]
     a.fn(a)
 

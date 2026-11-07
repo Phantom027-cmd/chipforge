@@ -19,9 +19,23 @@ def fold(x: np.ndarray, n: int) -> np.ndarray:
 
 
 @lru_cache(maxsize=256)
-def sos(kind: str, f, sr: int, order: int = 2, f2=None):
+def sos(kind: str, f, sr: int, order: int = 2, f2=None, gain: float = 1.0):
+    """Butterworth low/high/band, or an RBJ shelf: kind 'highshelf' / 'lowshelf' with linear `gain`."""
     if kind == "band":
         return ss.butter(order, [f, f2], "band", fs=sr, output="sos")
+    if kind in ("highshelf", "lowshelf"):
+        A = np.sqrt(max(gain, 1e-6))
+        w0 = 2 * np.pi * f / sr
+        cw, sw = np.cos(w0), np.sin(w0)
+        alpha = sw / 2 * np.sqrt(2.0)            # shelf slope 1
+        s_ = 1.0 if kind == "highshelf" else -1.0
+        b0 = A * ((A + 1) + s_ * (A - 1) * cw + 2 * np.sqrt(A) * alpha)
+        b1 = -2 * s_ * A * ((A - 1) + s_ * (A + 1) * cw)
+        b2 = A * ((A + 1) + s_ * (A - 1) * cw - 2 * np.sqrt(A) * alpha)
+        a0 = (A + 1) - s_ * (A - 1) * cw + 2 * np.sqrt(A) * alpha
+        a1 = 2 * s_ * ((A - 1) - s_ * (A + 1) * cw)
+        a2 = (A + 1) - s_ * (A - 1) * cw - 2 * np.sqrt(A) * alpha
+        return np.array([[b0 / a0, b1 / a0, b2 / a0, 1.0, a1 / a0, a2 / a0]])
     return ss.butter(order, f, kind, fs=sr, output="sos")
 
 

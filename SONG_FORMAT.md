@@ -37,6 +37,10 @@ The song file is YAML. `QUICKREF.md` is the short version; this page lists every
 | `echo` | map |  | Echo: {time: steps between taps (default 3 = dotted eighth), taps: [gains...]}. |
 | `reverb` | map |  | Reverb: {size: seconds, decay: seconds, tone: low-pass Hz, predelay: seconds}. |
 | `sidechain` | num | `0.07` | Kick sidechain release in seconds. Range 0.01..1. |
+| `hf` | num | `0.95` | Master high-shelf gain above 2.5 kHz (0.95 = highs 5% quieter). Range 0.5..1.5. |
+| `hf_freq` | num | `2500` | High-shelf corner frequency in Hz. Range 500..12000. |
+| `ceiling` | num | `-1.0` | True-peak ceiling in dBTP for the limiter. Range -12..0. |
+| `normalize` | bool | `True` | Normalize to the loudness target (false = only the soft clip and ceiling). |
 
 ## Channels (`channels: {name: {...}}`)
 

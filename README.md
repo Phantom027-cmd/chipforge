@@ -31,12 +31,13 @@ chipforge presets                                  # instrument library
 
 ## Status
 
-Milestone 2 of 8 (chip profiles + presets: NES, Game Boy, SID, FM, GM; 66 presets). Coming: LUFS
-mastering and more ambience beds, MP3 + stems polish, the `analyze` "ears" module, MCP server,
-review page, templates and the cue guide.
+Milestone 3 of 8 (mixing + mastering: LUFS targets per cue, true-peak limiting, 8 ambience beds).
+Coming: output polish and loop metadata, the `analyze` "ears" module, MCP server, review page,
+templates and the cue guide.
 
 ## Benchmark
 
 `python benchmark.py` renders every example three times and reports the best time.
-Container (2 vCPU, Python 3.13, NumPy 2.5): `boss_factory` 1.2 s, `boss_factory_dark` (with
-reverb + factory ambience) 3.5 s for 60 s of 44.1 kHz stereo. Laptop numbers to follow.
+Container (2 vCPU, Python 3.13, NumPy 2.5), 60 s of 44.1 kHz stereo incl. LUFS mastering and
+stems: `boss_factory` 1.6 s, `boss_factory_dark` (reverb + factory ambience) 3.7 s,
+`overworld_gameboy` 1.1 s. The container is noisy; laptop numbers to follow.

@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.0 - milestone 3: mixing and mastering
+
+- `loudness.py`: BS.1770-4 K-weighted integrated / short-term / momentary loudness, EBU loudness
+  range, 4x-oversampled true peak (matches pyloudnorm to 0.01 LU) and a vectorized look-ahead
+  limiter that wraps cleanly on loops. No new dependencies.
+- Master chain: high-pass -> soft clip -> high shelf (`mix.hf`, default 0.95 = highs 5% quieter,
+  from listening feedback) -> loudness normalization to the cue target (`CUE_LOUDNESS`: boss/combat
+  -12, overworld -14, dungeon/menu -16, ambience -20 ...; `loudness:` overrides) -> true-peak
+  limiter at `mix.ceiling` (-1 dBTP). Stems get the same gain without limiting so they sum like the
+  mix. The render report shows LUFS, true peak and how much the limiter worked.
+- Ambience beds: forest, rain, wind, machinery, water, crowd (plus factory and cave), all seamless;
+  `chipforge ambience <bed> -s 60` renders a bed on its own at -20 LUFS.
+- Mixer: no per-part stereo allocation (buses accumulate in place); fewer filter passes.
+- Tests: meter vs BS.1770 sine, limiter ceiling, cue targets, shelf, every bed seamless (126 tests).
+
 ## 0.2.0 - milestone 2: chip profiles and presets
 
 - Chip profiles: `gameboy` (4-bit 32-step wave channel with named tables, 7-bit metallic noise,
