@@ -22,6 +22,20 @@ class Part:
     mix: dict
     layer: int
     voice: str
+    group: str = "other"   # stem group: lead arp bass pads drums fx
+
+
+GROUP_OF = {"lead": "lead", "arp": "arp", "bass": "bass", "pad": "pads", "drone": "pads", "kit": "drums", "fx": "fx"}
+
+
+def stem_key(p: "Part", by: str | None) -> str:
+    if by == "layer":
+        return f"layer{p.layer}"
+    if by == "group":
+        return p.group
+    if by == "channel":
+        return p.ch
+    return "all"
 
 
 class Space:
@@ -175,7 +189,7 @@ def render_parts(song: Song, tl: score.Timeline, ctx0: Ctx, n_buf: int, cache: _
                 mix["pan"] = float(np.clip(mix["pan"] + ch.pan, -1, 1))
                 mix.update(ch.overrides)
                 pname = name if len(layers) == 1 else f"{name}.{layer['voice']}{li}"
-                parts.append(Part(pname, name, buf, mix, ch.layer, layer["voice"]))
+                parts.append(Part(pname, name, buf, mix, ch.layer, layer["voice"], GROUP_OF.get(ch.preset.split(".")[0], "other")))
         else:
             for pc, piece in preset["pieces"].items():
                 pevs = [e for e in evs if e.piece == pc]
@@ -200,7 +214,7 @@ def render_parts(song: Song, tl: score.Timeline, ctx0: Ctx, n_buf: int, cache: _
                 mix["vol"] = pmix.get("vol", 1.0) * base_mix["vol"] * ch.vol
                 mix["pan"] = float(np.clip(mix["pan"] + ch.pan, -1, 1))
                 mix.update({k: v for k, v in ch.overrides.items() if k in ("lp", "hp", "duck")})
-                parts.append(Part(f"{name}.{pc}", name, buf, mix, ch.layer, piece["voice"]))
+                parts.append(Part(f"{name}.{pc}", name, buf, mix, ch.layer, piece["voice"], GROUP_OF.get(ch.preset.split(".")[0], "other")))
                 if piece["voice"] == "kick":
                     kicks += [(int(round(e.t * sr)), e.vel) for e in pevs]
     return parts, kicks
@@ -225,7 +239,7 @@ def mix_parts(song: Song, parts: list[Part], kicks: list, space: Space, enhanced
             x = space.filt(x, fx.sos("high", float(p.mix["hp"]), sr))
         if duck_env is not None and p.mix.get("duck"):
             x = x * (1 - p.mix["duck"] * duck_env)
-        key = (p.mix["bus"], f"layer{p.layer}" if stems_by == "layer" else "all")
+        key = (p.mix["bus"], stem_key(p, stems_by))
         bus = buses.get(key)
         if bus is None:
             bus = buses[key] = np.zeros((n, 2))
@@ -256,10 +270,18 @@ def mix_parts(song: Song, parts: list[Part], kicks: list, space: Space, enhanced
     stems: dict[str, np.ndarray] = {}
     for bus in {b for b, _ in buses}:
         total = sum(v for (b, _), v in buses.items() if b == bus)
-        out += fx.saturate(total, m["low_drive"]) if bus == "low" else total
+        if bus == "low" and m["low_drive"]:
+            sat = fx.saturate(total, m["low_drive"])
+            out += sat
+            if stems_by:          # share the saturated bus between stems by their proportion: stems stay additive
+                ratio = np.where(np.abs(total) > 1e-9, sat / np.where(np.abs(total) > 1e-9, total, 1.0), 1.0)
+                for (b, stem), v in buses.items():
+                    if b == bus:
+                        buses[(b, stem)] = v * ratio
+        else:
+            out += total
     if stems_by:
         for (bus, stem), v in buses.items():
-            v = fx.saturate(v, m["low_drive"]) if bus == "low" else v
             stems[stem] = stems[stem] + v if stem in stems else v
     if enhanced:
         d = int(round(m["echo"]["time"] * song.step_s * sr))
@@ -279,33 +301,47 @@ def mix_parts(song: Song, parts: list[Part], kicks: list, space: Space, enhanced
     return out, stems
 
 
-def master(song: Song, x: np.ndarray, space: Space, gain: float | None = None, hp: bool = True,
-           limit: bool = True) -> tuple[np.ndarray, float, dict]:
+def master(song: Song, x: np.ndarray, space: Space, hp: bool = True) -> tuple[np.ndarray, float, dict]:
     """Master chain: high-pass -> soft clip -> high shelf -> loudness normalize -> true-peak limiter.
-    With `gain` given (stems), the same gain is applied without re-measuring and without limiting."""
+    Returns (audio, linear gain, info). info['curves'] holds the per-sample gain curves of the two
+    nonlinear stages so stems can be put through master_stem() and still sum exactly to the mix."""
     from . import loudness
     m = song.mix
     y = space.filt(x, fx.sos("high", float(m["hp"]), song.sr)) if hp else x
-    y = fx.soft_clip(y, m["drive"])
+    clipped = fx.soft_clip(y, m["drive"])
+    clip_curve = np.where(np.abs(y) > 1e-9, clipped / np.where(np.abs(y) > 1e-9, y, 1.0), 1.0)
+    y = clipped
     if m["hf"] != 1.0:
         y = space.filt(y, fx.sos("highshelf", float(m["hf_freq"]), song.sr, gain=float(m["hf"])))
     info: dict = {}
-    if gain is not None:
-        return y * gain, gain, info
     if m["normalize"]:
         y, info = loudness.normalize(y, song.sr, song.target_lufs, m["ceiling"], circular=space.circular)
         gain = 10 ** (info["gain_db"] / 20)
+        lim_curve = info.pop("gain_curve")
     else:
         peak = float(np.max(np.abs(y))) or 1.0
         gain = min(1.0, 10 ** (m["ceiling"] / 20) / peak)
         y = y * gain
         info = {"gain_db": round(20 * np.log10(gain), 2)}
+        lim_curve = np.ones(len(y))
     info["target_lufs"] = song.target_lufs
+    info["curves"] = {"clip": clip_curve, "lim": lim_curve, "gain": gain}
     return y, gain, info
 
 
+def master_stem(song: Song, x: np.ndarray, space: Space, curves: dict) -> np.ndarray:
+    """Apply the mix's master gain curves to a stem (already high-passed)."""
+    m = song.mix
+    y = x * curves["clip"]
+    if m["hf"] != 1.0:
+        y = space.filt(y, fx.sos("highshelf", float(m["hf_freq"]), song.sr, gain=float(m["hf"])))
+    return y * curves["gain"] * curves["lim"][:, None]
+
+
 # ------------------------------------------------------------------ entry point
-def render(song: Song, *, stems: bool = True) -> RenderResult:
+def render(song: Song, *, stems: bool = True, stems_by: str = "layer") -> RenderResult:
+    """Render a validated Song. stems_by: 'layer' (adaptive intensity), 'group' (lead/arp/bass/pads/drums/fx)
+    or 'channel'."""
     t0 = time.perf_counter()
     tl = score.build(song)
     prof = chips.get(song.chip)
@@ -321,7 +357,7 @@ def render(song: Song, *, stems: bool = True) -> RenderResult:
     space = Space(n_total if loop_start is not None else n_total + tail, loop_start, sr)
     for p in parts:
         p.buf = space.fold(p.buf)
-    music, layer_stems = mix_parts(song, parts, kicks, space, enhanced, "layer" if stems else None)
+    music, layer_stems = mix_parts(song, parts, kicks, space, enhanced, stems_by if stems else None)
 
     amb = None
     if song.ambience and song.ambience.get("bed", "none") != "none" and enhanced:
@@ -335,14 +371,17 @@ def render(song: Song, *, stems: bool = True) -> RenderResult:
             amb = amb * 0.3 / (np.max(np.abs(amb)) or 1.0)
 
     # the master high-pass is linear, so apply it per component once and sum
-    music = space.filt(music, fx.sos("high", float(song.mix["hp"]), sr))
+    hp_sos = fx.sos("high", float(song.mix["hp"]), sr)
+    music = space.filt(music, hp_sos)
+    layer_stems = {k: space.filt(v, hp_sos) for k, v in layer_stems.items()}
     if amb is not None:
-        amb = space.filt(amb, fx.sos("high", float(song.mix["hp"]), sr))
+        amb = space.filt(amb, hp_sos)
     full = music + amb if amb is not None else music
     mixed, gain, minfo = master(song, full, space, hp=False)
-    music_m = mixed if amb is None else master(song, music, space, gain, hp=False)[0]
-    amb_m = master(song, amb, space, gain, hp=False)[0] if amb is not None else None
-    stems_out = {k: master(song, v, space, gain, hp=False)[0] for k, v in layer_stems.items()} if stems else {}
+    curves = minfo.pop("curves")
+    music_m = mixed if amb is None else master_stem(song, music, space, curves)
+    amb_m = master_stem(song, amb, space, curves) if amb is not None else None
+    stems_out = {k: master_stem(song, v, space, curves) for k, v in layer_stems.items()} if stems else {}
     if amb_m is not None and stems:
         stems_out["ambience"] = amb_m
     if loop_start is None:

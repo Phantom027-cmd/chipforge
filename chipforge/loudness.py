@@ -104,7 +104,7 @@ def true_peak(x: np.ndarray, sr: int) -> float:
 
 
 def limiter(x: np.ndarray, sr: int, ceiling_db: float = -1.0, lookahead: float = 0.005,
-            release: float = 0.08, circular: bool = False) -> np.ndarray:
+            release: float = 0.08, circular: bool = False, return_gain: bool = False):
     """Look-ahead brick-wall limiter, fully vectorized. Gain = running minimum of the required
     gain over the look-ahead window (attack), then an exponential-in-dB release implemented as a
     cumulative minimum of a sloped line. In circular mode the loop wraps cleanly."""
@@ -128,7 +128,8 @@ def limiter(x: np.ndarray, sr: int, ceiling_db: float = -1.0, lookahead: float =
     from scipy.ndimage import uniform_filter1d
     g = np.minimum(uniform_filter1d(10 ** (g_db / 20), size=la, mode="nearest"), 10 ** (need / 20))
     g = g[pad:pad + len(mag)]
-    return x * (g[:, None] if x.ndim == 2 else g)
+    y = x * (g[:, None] if x.ndim == 2 else g)
+    return (y, g) if return_gain else y
 
 
 def normalize(x: np.ndarray, sr: int, target_lufs: float, ceiling_db: float = -1.0, circular: bool = False,
@@ -139,12 +140,13 @@ def normalize(x: np.ndarray, sr: int, target_lufs: float, ceiling_db: float = -1
     gain_db = float(np.clip(target_lufs - before, -max_gain_db, max_gain_db)) if np.isfinite(before) else 0.0
     y = x * 10 ** (gain_db / 20)
     peak_before = float(20 * np.log10(np.max(np.abs(y)) + 1e-12))
-    y = limiter(y, sr, ceiling_db, circular=circular)
+    y, g = limiter(y, sr, ceiling_db, circular=circular, return_gain=True)
     tp = true_peak(y, sr)
     if tp > ceiling_db + 0.05:                                  # belt and braces
-        y = y * 10 ** ((ceiling_db - tp) / 20)
+        trim = 10 ** ((ceiling_db - tp) / 20)
+        y, g = y * trim, g * trim
         tp = ceiling_db
     limited = max(0.0, peak_before - ceiling_db)
     after = integrated(y, sr) if limited > 0.5 else before + gain_db     # re-measure only if the limiter worked
     return y, {"gain_db": round(gain_db, 2), "lufs_before": round(before, 2), "lufs_after": round(after, 2),
-               "true_peak": round(tp, 2), "limited_db": round(limited, 2)}
+               "true_peak": round(tp, 2), "limited_db": round(limited, 2), "gain_curve": g}

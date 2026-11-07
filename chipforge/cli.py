@@ -31,7 +31,7 @@ def cmd_render(a):
     song = _load(a.song)
     from .render import render
     from .export import write_all
-    res = render(song, stems=not a.no_stems)
+    res = render(song, stems=not a.no_stems, stems_by=a.stems_by)
     out = a.out or str(Path(a.song).with_suffix("")) + "_out"
     paths = write_all(res, out, formats=tuple(a.format), stems=not a.no_stems, preview=not a.no_preview,
                       midi=not a.no_midi, bits=a.bits)
@@ -100,6 +100,8 @@ def main(argv=None):
     p.add_argument("--bits", type=int, default=16, choices=[16, 24])
     p.add_argument("--no-stems", action="store_true"); p.add_argument("--no-preview", action="store_true")
     p.add_argument("--no-midi", action="store_true")
+    p.add_argument("--stems-by", choices=["layer", "group", "channel"], default="layer",
+                   help="stem split: adaptive layers (default), instrument groups, or every channel")
     p.set_defaults(fn=cmd_render)
     p = sub.add_parser("presets", help="list instrument presets"); p.add_argument("category", nargs="?")
     p.set_defaults(fn=cmd_presets)

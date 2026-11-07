@@ -71,7 +71,36 @@ def song_format() -> str:
             "Loop points are written to the WAV `smpl` chunk, OGG `LOOPSTART`/`LOOPLENGTH` and the JSON sidecar.\n",
             "## Chip profiles\n", "| chip | description |", "|---|---|"]
     out += [f"| `{n}` | {p.doc} |" for n, p in chips.PROFILES.items()]
+    out += ["", OUTPUTS_DOC]
     return "\n".join(out) + "\n"
+
+
+OUTPUTS_DOC = """## Outputs and loop metadata
+
+`chipforge render song.yml -o out/ [-f wav|ogg|mp3 ...] [--bits 24] [--stems-by layer|group|channel]` writes:
+
+| file | contents |
+|---|---|
+| `<title>.wav` / `.ogg` / `.mp3` | the mastered track. WAV carries a `smpl` chunk with the loop; OGG carries `LOOPSTART` / `LOOPLENGTH` Vorbis comments (samples) |
+| `<title>_preview.<fmt>` | intro + loop played twice, so the seam can be auditioned |
+| `<title>_intro.<fmt>`, `<title>_loop.<fmt>` | only when the song has an intro: the two pieces for engines that chain an intro into a loop |
+| `<title>_stems/<stem>.<fmt>` | stems with the same loop metadata; `layerN` (adaptive intensity, default), or instrument groups `lead arp bass pads drums fx`, or one per channel. Stems sum exactly to the mix: the nonlinear stages are shared as gain curves |
+| `<title>_stems/music.<fmt>`, `ambience.<fmt>` | music without the bed, and the bed alone, when `ambience:` is set |
+| `<title>.mid` | one track per channel (kits on MIDI channel 10), markers for every section plus `loopStart` / `loopEnd` |
+| `<title>.json` | tempo, bars, beat and bar seconds, loop start/end in samples and seconds, sections with `exits` (seconds), intensity layers with their channels and stem files, loudness (target, measured, true peak, limiter work), file paths |
+
+Loop points are exact sample positions on the bar grid; the loop region always ends at the last sample of the file.
+
+### Using the loop in game engines
+
+- **Godot**: WAV loop points are read from the file ("by default, Godot will follow this metadata" - [importing audio samples](https://docs.godotengine.org/en/stable/tutorials/assets_pipeline/importing_audio_samples.html)). For OGG/MP3 enable *Loop* in the import dock and set *Loop Offset* to `loop.start_seconds` from the JSON (the loop end is the end of the file, which is how ChipForge renders).
+- **RPG Maker MV/MZ**: OGG `LOOPSTART` / `LOOPLENGTH` are read natively.
+- **Unity**: AudioClip has no loop points. Either use `_intro` + `_loop` with two AudioSources and `PlayScheduled`, or a looping-audio plugin that reads the WAV `smpl` chunk.
+- **FMOD / Wwise**: set the loop region to `loop.start_samples` .. `loop.end_samples` in the tool, or import `_loop` with a plain loop.
+- **Web Audio / Phaser**: `AudioBufferSourceNode.loop = true; loopStart = loop.start_seconds; loopEnd = loop.end_seconds`.
+- **GameMaker**: `audio_sound_loop_start()` / `audio_sound_loop_end()` in seconds.
+- **Adaptive music**: play the `layerN` stems in sync and fade them by intensity; switch sections horizontally at the `exits` listed per section (seconds from the start of the file).
+"""
 
 
 def presets_doc() -> str:

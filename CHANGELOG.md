@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.4.0 - milestone 4: outputs and loop metadata
+
+- Stems by `layer` (adaptive intensity), `group` (lead / arp / bass / pads / drums / fx) or
+  `channel` (`--stems-by`). Stems sum exactly to the mix: the low-bus saturation, master soft clip
+  and limiter are shared as per-sample gain curves instead of being re-applied per stem.
+- `_intro` + `_loop` files when the song has an intro (for engines that chain two clips);
+  MP3 via libsndfile (ffmpeg fallback); 24-bit WAV; OGG stems.
+- Loop metadata verified by reading it back: WAV `smpl` chunk and OGG `LOOPSTART`/`LOOPLENGTH`
+  round-trip tests; MIDI section + loop markers; `read_wav_loop` / `read_ogg_loop` helpers.
+- JSON sidecar: engine version, beat/bar seconds, loop in samples and seconds, sections with exits,
+  layers with their channels and stem files, loudness report, output paths.
+- SONG_FORMAT.md gains an "Outputs and loop metadata" section with per-engine notes (Godot,
+  RPG Maker, Unity, FMOD/Wwise, Web Audio, GameMaker).
+- Tests: 135.
+
 ## 0.3.0 - milestone 3: mixing and mastering
 
 - `loudness.py`: BS.1770-4 K-weighted integrated / short-term / momentary loudness, EBU loudness

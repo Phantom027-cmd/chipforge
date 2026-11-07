@@ -17,6 +17,7 @@ pip install -e ".[analysis]"   # optional: LUFS metering, spectrogram images
 ```bash
 chipforge quickref                                 # the one page you need to write a song
 chipforge render examples/boss_factory.yml -o out  # wav + preview (loop twice) + stems + midi + json
+chipforge render song.yml -f ogg -f mp3 --stems-by group   # loop-tagged OGG, MP3, instrument stems
 chipforge validate mysong.yml                      # precise, line-numbered errors
 chipforge presets                                  # instrument library
 ```
@@ -31,9 +32,9 @@ chipforge presets                                  # instrument library
 
 ## Status
 
-Milestone 3 of 8 (mixing + mastering: LUFS targets per cue, true-peak limiting, 8 ambience beds).
-Coming: output polish and loop metadata, the `analyze` "ears" module, MCP server, review page,
-templates and the cue guide.
+Milestone 4 of 8 (outputs: WAV/OGG/MP3 with loop points, additive stems by layer / group /
+channel, intro + loop files, MIDI, JSON sidecar). Coming: the `analyze` "ears" module, MCP server,
+review page, templates and the cue guide.
 
 ## Benchmark
 
