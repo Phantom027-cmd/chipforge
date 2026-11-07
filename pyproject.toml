@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chipforge"
+version = "0.1.0"
+description = "Retro game music engine: NES / Game Boy / SID / FM chip voices, a compact YAML+MML song format, seamless loops, and analysis tools that let AI models evaluate what they compose."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "soundfile>=0.12",
+    "mido>=1.3",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+analysis = ["pyloudnorm>=0.1.1", "librosa>=0.10", "matplotlib>=3.7", "pillow>=10"]
+mcp = ["mcp>=1.0"]
+fast = ["numba>=0.58"]
+dev = ["pytest>=7", "pytest-benchmark"]
+
+[project.scripts]
+chipforge = "chipforge.cli:main"
+chipforge-mcp = "chipforge.mcp_server:main"
+
+[tool.setuptools]
+packages = ["chipforge"]
+
+[tool.setuptools.package-data]
+chipforge = ["*.yml", "templates/*.yml", "data/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

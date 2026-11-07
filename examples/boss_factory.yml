@@ -1,0 +1,171 @@
+# Factory boss fight - port of reference/synth.py. E minor -> F minor climax, 160 BPM, 40 bars = 60 s loop.
+chipforge: 1
+title: Factory Boss
+cue: boss
+tempo: 160
+time: 4/4
+key: Em
+chip: nes
+mode: enhanced
+seed: 7
+loop: true
+
+channels:
+  lead:  {preset: lead.pulse25}
+  harm:  {preset: lead.harmony50, layer: 2}
+  arp:   {preset: arp.pulse12, layer: 2}
+  bass:  {preset: bass.tri_grit}
+  sub:   {preset: bass.sub}
+  drums: {preset: kit.nes_factory}
+
+patterns:
+  intro:
+    bars: 4
+    chords: "Em | Em | F | B"
+    bass:  &ost {gen: riff, steps: "0 0 12 0 0 12 0 0 12 0 0 12 0 12 7 10", low: e2, gate: 0.82}
+    sub:   &sub8 {gen: root, low: e1, retrig: [0, 8]}
+    drums:
+      k: "x...x...x...x..."
+      m: &clank "..x.......o..x.."
+      o: "................|................|..o...o...o...o.|..o...o...o...o."
+      s: "................|................|................|....x..........."
+      events:
+        - {at: "1:1", hit: groan, from: 52, to: 40, dur: 1.4}
+        - {at: "1:1", hit: c}
+        - {at: "1:1", hit: hiss, dur: 0.8}
+        - {at: "3:1", hit: hiss, dur: 0.6}
+        - {at: "3:1", hit: siren, from: 76, to: 76, len: 8}
+        - {at: "3:9", hit: siren, from: 76, to: 77, len: 8}
+        - {at: "4:1", hit: siren, from: 76, to: 76, len: 8}
+        - {at: "4:9", hit: siren, from: 76, to: 77, len: 8}
+        - {at: "4:9", roll: s, len: 8, ramp: [0.25, 1.0]}
+
+  # ---- main theme, two 4-bar halves (arp joins in the second half)
+  A1:
+    bars: 4
+    chords: "Em | Em | C | C"
+    lead: "o5 e4 <b8> e8 f+8 g4 f+8 | e4. d8 <b2> | c8 e8 g4 f+8 e8 d8 e8 | c2 d4 e4"
+    harm: &harm {gen: harmony, of: lead, interval: -2, scale: harmonic_minor}
+    bass: *ost
+    sub:  *sub8
+    drums: &drumsA
+      k: "x.....x.x.....x."
+      s: "....x.......x..."
+      h: "x.o.x.o.x.o.x.o."
+      m: *clank
+      events: [{at: "1:1", hit: c}]
+  A2:
+    bars: 4
+    chords: "Am | B | Em | B"
+    lead: "o5 a4. g8 a8 b8 >c4< | b2 a8 g8 f+8 d+8 | e4 <b8> e8 g4 b4 | a8 g8 f+4 d+4 <b4>"
+    harm: *harm
+    bass: *ost
+    sub:  *sub8
+    arp:  &arpA {gen: arp, every: 2, rate: 1, low: e4}
+    drums: &drumsA2
+      k: "x.....x.x.....x."
+      s: "....x.......x..."
+      h: "x.o.x.o.x.o.x.o."
+      m: *clank
+  # ---- variation: slides into the high notes, new tail
+  B1:
+    bars: 4
+    chords: "Em | Em | C | C"
+    lead: "o5 e4 <b8> e8 f+8 ~g4 f+8 | e4. d8 <b2> | c8 e8 g4 f+8 e8 d8 e8 | c2 d4 e4"
+    harm: *harm
+    bass: *ost
+    sub:  *sub8
+    arp:  *arpA
+    drums: *drumsA
+  B2:
+    bars: 4
+    chords: "Am | B | Em | B"
+    lead: "o5 a4. g8 a8 b8 >~c4< | b2 a8 g8 f+8 d+8 | e4 <b8> e8 g4 b4 | b4 >c8< b8 a8 g8 f+4"
+    harm: *harm
+    bass: *ost
+    sub:  *sub8
+    arp:  *arpA
+    drums:
+      <<: *drumsA2
+      events: [{at: "4:13", roll: s, len: 4, ramp: [0.4, 0.9]}]
+
+  # ---- the abomination looms: half-time, hollow lead, held bass
+  break:
+    bars: 8
+    chords: "C | D | Em | Em | C | D | B | B"
+    lead: "@d(0.5) @vib(0.4,5.8,0.2) o5 r1 | r1 | <b2> e2 | g2 f+4 e4 | g2. e4 | f+2 a2 | b1 | d+4 f+4 a4 b4"
+    bass: {gen: riff, steps: "0:10 12:2 0:4", low: e2, gate: 0.9}
+    sub:  {gen: root, low: e1}
+    arp:  {gen: arp, every: 1, rate: 2, duty: 0.25, low: c4}
+    drums:
+      k: "x.........x.....|x.........x.....|x.........x.....|x.........x.....|x.........x.....|x.........x.....|x...x...x...x...|x...x...x...x..."
+      s: "........x.......|........x.......|........x.......|........x.......|........x.......|........x.......|..o...o...o...x.|................"
+      o: "..g...g...g...g.|..g...g...g...g.|..g...g...g...g.|..g...g...g...g.|..g...g...g...g.|..g...g...g...g.|................|................"
+      m: "......x.......o.|......x.......o.|......x.......o.|......x.......o.|......x.......o.|......x.......o.|................|................"
+      h: "................|................|................|................|................|................|x.o.x.o.x.o.x.o.|xgogxgogxgogxgog"
+      events:
+        - {at: "1:1", hit: c}
+        - {at: "1:1", hit: groan, from: 48, to: 36, dur: 2.4}
+        - {at: "5:1", hit: groan, from: 48, to: 36, dur: 2.4}
+        - {at: "3:1", hit: hiss, dur: 0.9}
+        - {at: "5:9", hit: hiss, dur: 0.6}
+        - {at: "8:1", roll: s, len: 16, ramp: [0.2, 1.0]}
+        - {at: "8:1", hit: hiss, up: true, len: 16}
+
+  # ---- climax: the theme again, driven harder; the arrangement transposes it up a semitone
+  climax:
+    bars: 8
+    chords: "Em | Em | C | C | Am | B | Em | B"
+    lead: "o5 e4 <b8> e8 f+8 g4 f+8 | e4. d8 <b2> | c8 e8 g4 f+8 e8 d8 e8 | c2 d4 e4 | a4. g8 a8 b8 >c4< | b2 a8 g8 f+8 d+8 | e4 <b8> e8 g4 b4 | b4 a8 g8 f+4 d+4"
+    harm: *harm
+    bass: *ost
+    sub:  *sub8
+    arp:  *arpA
+    drums:
+      k: "x..x..x.x..x..x."
+      s: "....x.......x..."
+      h: "xgogxgogxgogxgog"
+      m: *clank
+      events:
+        - {at: "1:1", hit: c}
+        - {at: "5:1", hit: c}
+        - {at: "8:13", roll: s, len: 4, ramp: [0.5, 1.0]}
+
+  # ---- turnaround: stabs on C, D, B
+  turn:
+    bars: 3
+    chords: "C | D | B"
+    lead: "@vib(0) q7 o5 g8 r16 g8 r16 g8 r8 g8 g8 g8 | a8 r16 a8 r16 a8 r8 a8 a8 a8 | b8 r16 b8 r16 b8 r8 b8 b8 b8"
+    harm: "@d(0.5) @vib(0) q7 o5 e8 r16 e8 r16 e8 r8 e8 e8 e8 | f+8 r16 f+8 r16 f+8 r8 f+8 f+8 f+8 | f+8 r16 f+8 r16 f+8 r8 f+8 f+8 f+8"
+    bass: {gen: riff, steps: "0:2 . 0:2 . 0:2 . . . 0:2 0:2 0:2", low: e2, gate: 0.9}
+    sub:  {gen: root, low: e1}
+    drums:
+      k: "x..x..x...x.x.x."
+      s: "....x.......x..."
+      h: "x.o.x.o.x.o.x.o."
+      m: *clank
+      events: [{at: "1:1", hit: c}]
+  last:
+    bars: 1
+    chords: "B"
+    lead: "@vib(0.45) o5 b1"
+    harm: "@d(0.5) @vib(0.35) o5 f+1"
+    bass: {gen: riff, steps: "0 0 12 0", low: e2, gate: 0.82}
+    sub:  {gen: root, low: e1}
+    arp:  {gen: arp, every: 1, rate: 1, low: e4}
+    drums:
+      k: "x...x...x.x.x.x."
+      events:
+        - {at: "1:1", roll: s, len: 16, ramp: [0.15, 1.0]}
+        - {at: "1:1", hit: hiss, up: true, len: 16}
+
+arrangement:
+  - intro
+  - {use: A1, mute: [harm]}
+  - {use: A2, mute: [harm], channels: {arp: {vol: 0.6}}}
+  - B1
+  - B2
+  - break
+  - {use: climax, transpose: 1}
+  - turn
+  - {use: last, channels: {arp: {vol: 0.8}}}

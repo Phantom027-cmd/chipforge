@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+*_out/
+out/
+renders/
+*.wav
+*.ogg
+*.mp3
+!tests/data/*.wav
+feedback.json
+.venv/

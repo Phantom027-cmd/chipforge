@@ -1,0 +1,233 @@
+# ChipForge preset library. Instruments are data: edit here, not in code.
+# Melodic presets: voice + voice parameters (see VOICES in presets.py) + mix defaults + gm program.
+# Kit presets: pieces (lane letter or hit name) -> voice + parameters + mix.
+# `vol` values are reference mix levels; a channel's `vol` multiplies them (1.0 = as tuned).
+
+# ---------------------------------------------------------------- leads
+lead.pulse25:
+  doc: NES 25% pulse lead with attack pluck and delayed vibrato; the classic boss lead.
+  voice: pulse
+  duty: 0.25
+  pluck: 0.125
+  dec: 0.12
+  sus: 0.72
+  rel: 0.07
+  vib: 0.28
+  vib_rate: 5.8
+  slide: 0.06
+  mix: {vol: 0.20, echo: 1.0}
+  gm: 80
+
+lead.pulse50:
+  doc: Hollow 50% pulse lead, slower vibrato; darker and rounder than pulse25.
+  extends: lead.pulse25
+  duty: 0.5
+  pluck: 0.25
+  dec: 0.25
+  sus: 0.7
+  rel: 0.12
+  vib: 0.32
+  vib_rate: 5.0
+  vib_delay: 0.3
+  vib_ramp: 0.4
+  vib_min: 0.3
+  slide: 0.12
+  mix: {vol: 0.17, echo: 0.8, lp: 2600}
+
+lead.pulse12:
+  doc: Thin 12.5% pulse; nasal, cuts through arps. Good for counter-melodies.
+  extends: lead.pulse25
+  duty: 0.125
+  pluck: null
+  mix: {vol: 0.18, echo: 0.6}
+
+lead.harmony50:
+  doc: 50% pulse tuned for harmony parts under lead.pulse25 (lighter vibrato, no pluck, no echo).
+  extends: lead.pulse25
+  duty: 0.5
+  pluck: null
+  vib: 0.22
+  mix: {vol: 0.085, pan: -0.3, echo: 0}
+
+lead.harmony25:
+  doc: 25% pulse harmony voice that pairs with lead.pulse50 (same slow envelope, no echo).
+  extends: lead.pulse50
+  duty: 0.25
+  pluck: null
+  vib: 0.25
+  mix: {vol: 0.07, pan: -0.3, lp: 2200, echo: 0}
+
+lead.tri:
+  doc: NES triangle as a lead; soft, flute-like, no volume envelope.
+  voice: tri
+  vib: 0.2
+  mix: {vol: 0.3}
+  gm: 73
+
+lead.saw:
+  doc: Band-limited saw lead (enhanced / SID-style flavour).
+  voice: wave
+  table: saw
+  vib: 0.2
+  mix: {vol: 0.16, echo: 0.6}
+  gm: 81
+
+# ---------------------------------------------------------------- arps
+arp.pulse12:
+  doc: Fast 12.5% pulse arpeggio voice; plays chord tones at 60 Hz frame rate via the arp generator.
+  voice: pulse
+  duty: 0.125
+  dec: 0.18
+  sus: 0.3
+  rel: 0.02
+  pluck: null
+  vib: 0
+  mix: {vol: 0.10, pan: 0.3}
+  gm: 81
+
+arp.pulse25:
+  doc: 25% pulse arp; fuller than pulse12.
+  extends: arp.pulse12
+  duty: 0.25
+  dec: 0.2
+  sus: 0.25
+  mix: {vol: 0.06, pan: 0.3, lp: 2400}
+
+# ---------------------------------------------------------------- basses
+bass.tri:
+  doc: NES triangle bass; the foundation of every chip bass line.
+  voice: tri
+  mix: {vol: 0.30, bus: low}
+  gm: 38
+
+bass.grit:
+  doc: Low-passed 25% pulse doubling the triangle; adds the bite that reads on small speakers.
+  voice: grit
+  duty: 0.25
+  mix: {vol: 0.20, bus: low, lp: 750, duck: 0.6}
+  gm: 38
+
+bass.grit_dark:
+  doc: Detuned two-pulse grit with pitch bite; heavier than bass.grit.
+  voice: grit
+  duty: 0.25
+  detune: 0.004
+  bite: 0.03
+  dec: 0.12
+  sus: 0.55
+  rel: 0.02
+  mix: {vol: 0.34, bus: low, lp: 520, duck: 0.45}
+  gm: 38
+
+bass.sub:
+  doc: Clean sine sub-bass (41-80 Hz), kick-sidechained. Use with the root generator.
+  voice: sine
+  mix: {vol: 0.42, bus: low, duck: 0.6}
+  gm: 38
+
+bass.tri_grit:
+  doc: Triangle + low-passed grit pulse in one channel (pair with bass.sub on a root generator).
+  voice: stack
+  layers:
+    - {voice: tri, vol: 0.30}
+    - {voice: grit, duty: 0.25, vol: 0.20, lp: 750, duck: 0.6}
+  mix: {vol: 1.0, bus: low}
+  gm: 38
+
+bass.tri_grit_dark:
+  doc: Triangle + detuned biting grit, darker low-pass (the dark boss bass).
+  voice: stack
+  layers:
+    - {voice: tri, vol: 0.24}
+    - {voice: grit, duty: 0.25, detune: 0.004, bite: 0.03, dec: 0.12, sus: 0.55, rel: 0.02, vol: 0.34, lp: 520, duck: 0.45}
+  mix: {vol: 1.0, bus: low}
+  gm: 38
+
+bass.chipstack:
+  doc: Triangle + filtered grit + sine sub one octave down, in one channel. The reference boss bass.
+  voice: stack
+  layers:
+    - {voice: tri, vol: 0.30}
+    - {voice: grit, duty: 0.25, vol: 0.20, lp: 750}
+    - {voice: sine, vol: 0.42, octave: -1}
+  mix: {vol: 1.0, bus: low, duck: 0.6}
+  gm: 38
+
+bass.pulse:
+  doc: 50% pulse bass with short decay; punchy, for menus and overworld.
+  voice: pulse
+  duty: 0.5
+  dec: 0.15
+  sus: 0.5
+  rel: 0.03
+  vib: 0
+  pluck: null
+  mix: {vol: 0.22, bus: low}
+  gm: 39
+
+# ---------------------------------------------------------------- drones & pads
+drone.pwm_detuned:
+  doc: Two detuned PWM pulses plus a fifth; slow beating dread. Low-passed, partly sidechained.
+  voice: drone
+  mix: {vol: 0.30, bus: low, lp: 1100, duck: 0.4, reverb: 0.1}
+  gm: 89
+
+pad.pulse:
+  doc: Soft 50% pulse pad for held chords (use with the pad generator).
+  voice: pulse
+  duty: 0.5
+  att: 0.2
+  dec: 0.5
+  sus: 0.8
+  rel: 0.3
+  vib: 0.1
+  pluck: null
+  mix: {vol: 0.06, reverb: 0.5, lp: 2000}
+  gm: 89
+
+fx.eerie:
+  doc: Slowly swelling detuned pulse cluster; unease for breakdowns (use with pad generator or events).
+  voice: pulse
+  duty: 0.125
+  att: 1.5
+  dec: 1.0
+  sus: 1.0
+  rel: 1.5
+  vib: 0.12
+  vib_rate: 4.3
+  vib_delay: 0
+  pluck: null
+  mix: {vol: 0.05, reverb: 0.8}
+  gm: 97
+
+# ---------------------------------------------------------------- kits
+kit.nes:
+  doc: NES drum kit - sine-swept kick, noise snare, LFSR hats, crash.
+  pieces:
+    k: {voice: kick, vol: 0.62, bus: low, gm: 36}
+    s: {voice: snare, vol: 0.30, gm: 38}
+    h: {voice: hat, vol: 0.075, pan: -0.2, gm: 42}
+    o: {voice: hat, dec: 0.07, len: 0.16, vol: 0.075, pan: -0.2, gm: 46}
+    c: {voice: crash, vol: 0.11, pan: 0.05, gm: 49}
+
+kit.nes_factory:
+  doc: NES kit plus metal clank and steam hiss; the reference factory-boss kit.
+  extends: kit.nes
+  pieces:
+    m: {voice: clank, vol: 0.11, pan: 0.2, gm: 56}
+    hiss: {voice: hiss, vol: 0.08, pan: 0.05, gm: 52}
+    groan: {voice: groan, vol: 0.15, lp: 1800, gm: 87}
+    siren: {voice: siren, vol: 0.07, width: 0.012, gm: 80}
+
+kit.nes_dark:
+  doc: Heavier, slower kit - longer kick, crushed low snare, ticking hats, dark clank. Reverb-sent.
+  pieces:
+    k: {voice: kick, f0: 170, f1: 38, pitch_dec: 0.03, dec: 0.30, click: 0.35, click_f: 250, len: 0.5, vol: 0.60, bus: low, gm: 36}
+    s: {voice: snare, rate: 13000, dec: 0.12, tone_f: 150, tone_dec: 0.05, tone: 0.7, len: 0.35, vol: 0.26, reverb: 0.37, gm: 38}
+    h: {voice: hat, dec: 0.008, len: 0.03, vol: 0.05, pan: -0.2, gm: 42}
+    m: {voice: clank, f1: 311, f2: 467, dec: 0.08, rate: 30000, len: 0.3, vol: 0.09, pan: 0.2, reverb: 1.4, gm: 56}
+    c: {voice: crash, rate: 20000, dec: 0.7, len: 2.2, vol: 0.06, lp: 6000, reverb: 0.8, gm: 49}
+    hiss: {voice: hiss, f_lo: 2000, f_hi: 20000, vol: 0.05, gm: 52}
+    groan: {voice: groan, wobble: 0.7, wobble_rate: 6, noise: 0.35, curve: 0.6, att: 0.15, vol: 0.16, lp: 1500, reverb: 0.25, gm: 87}
+    siren: {voice: siren, duty: 0.125, slide: 0.9, vol: 0.06, lp: 2000, reverb: 1.0, gm: 80}
+    eerie: {voice: eerie, vol: 0.05, reverb: 0.8, gm: 97}

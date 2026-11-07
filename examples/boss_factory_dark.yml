@@ -1,0 +1,137 @@
+# Factory boss fight, DARK version - port of reference/synth_dark.py.
+# E phrygian / neapolitan minor, 128 BPM, 32 bars = 60 s loop. Heavier bass, detuned drones,
+# half-time drums, circular reverb and a factory ambience bed under the music.
+chipforge: 1
+title: Factory Boss Dark
+cue: boss
+tempo: 128
+time: 4/4
+key: Em
+chip: nes
+mode: enhanced
+seed: 13
+loop: true
+ambience: {bed: factory, level: -19}
+mix:
+  drive: 1.15
+  low_drive: 1.7
+  echo: {time: 3, taps: [0.32, 0.22, 0.12, 0.07]}
+
+channels:
+  lead:  {preset: lead.pulse50, reverb: 0.28}
+  harm:  {preset: lead.harmony25, reverb: 0.57, layer: 2}
+  arp:   {preset: arp.pulse25, reverb: 0.93, layer: 2}
+  bass:  {preset: bass.tri_grit_dark}
+  sub:   {preset: bass.sub, vol: 1.19, duck: 0.45}
+  drone: {preset: drone.pwm_detuned, duck: 0.18, layer: 3}
+  drums: {preset: kit.nes_dark}
+
+patterns:
+  intro:
+    bars: 4
+    chords: "Em | Em | Em | F"
+    sub:   &sub {gen: root, low: e1, gate: 0.98}
+    drone: &drone {gen: drone, low: e2}
+    bass:  {gen: riff, steps: ".:16 | .:16 | 0:3 0:3 12:2 0:3 1:3 0:2 | 0:3 0:3 12:2 0:6 -1:2", low: e2, gate: 0.88}
+    drums:
+      k: "................|x..o............|x..o......x.....|x..o......x....."
+      h: "................|................|..g...g...g...g.|..g...g...g...g."
+      events:
+        - {at: "1:1", hit: groan, from: 40, to: 28, dur: 3.6}
+        - {at: "3:1", hit: siren, from: 64, to: 65, len: 16}
+        - {at: "4:1", hit: siren, from: 64, to: 65, len: 16}
+        - {at: "4:13", roll: s, len: 4, ramp: [0.2, 0.7]}
+        - {at: "4:9", hit: hiss, up: true, len: 8}
+
+  A:
+    bars: 8
+    chords: "Em | Em | F | F | Em | Em | C | B"
+    lead: "o4 e4. f8 e4 d8 <b8> | e2. r4 | a4. g8 f4 e4 | f2. r4 | b4. >c8< b4 a8 g8 | g2 f+4 e4 | >c4.< b8 g4 e4 | d+2 f+4 a4"
+    bass: &riffs {gen: riff, steps: "0:3 0:3 12:2 0:3 1:3 0:2 | 0:3 0:3 12:2 0:3 1:3 0:2 | 0:3 0:3 12:2 0:6 -1:2 | 0:3 0:3 12:2 0:6 -1:2 | 0:3 0:3 12:2 0:3 1:3 0:2 | 0:3 0:3 12:2 0:3 1:3 0:2 | 0:3 0:3 12:2 0:6 -1:2 | 0:3 0:3 12:2 0:6 -1:2", low: e2, gate: 0.88}
+    sub:   *sub
+    drone: *drone
+    drums:
+      k: "x.......x.x....."
+      s: "........x......."
+      h: "..g...g...g...g."
+      m: ".....o........o."
+      events:
+        - {at: "1:1", hit: c}
+        - {at: "8:15", roll: s, len: 2, ramp: [0.3, 0.6]}
+
+  # ---- second pass: slides, harmony, arps in the back half
+  B1:
+    bars: 4
+    chords: "Em | Em | F | F"
+    lead: "o4 e4. f8 e4 d8 <b8> | e2 ~f4 e4 | a4. g8 f4 e4 | f2 ~e4 f4"
+    harm: &harm {gen: harmony, of: lead, interval: -2, scale: neapolitan_minor}
+    bass: {gen: riff, steps: "0:3 0:3 12:2 0:3 1:3 0:2 | 0:3 0:3 12:2 0:3 1:3 0:2 | 0:3 0:3 12:2 0:6 -1:2 | 0:3 0:3 12:2 0:6 -1:2", low: e2, gate: 0.88}
+    sub:   *sub
+    drone: *drone
+    drums: &drumsB
+      k: "x.....o.x.x....."
+      s: "........x......."
+      h: "g.g.g.g.g.g.g.g."
+      m: ".....o........x."
+      events: [{at: "1:1", hit: c}]
+  B2:
+    bars: 4
+    chords: "Em | Em | C | B"
+    lead: "o4 b4. >c8< b4 a8 g8 | g2 f+4 e4 | >c4.< b8 g4 e4 | d+4 f+4 a4 b4"
+    harm: *harm
+    bass: {gen: riff, steps: "0:3 0:3 12:2 0:3 1:3 0:2 | 0:3 0:3 12:2 0:3 1:3 0:2 | 0:3 0:3 12:2 0:6 -1:2 | 0:3 0:3 12:2 0:6 -1:2", low: e2, gate: 0.88}
+    sub:   *sub
+    drone: *drone
+    arp:   {gen: arp, every: 4, rate: 3, duty: 0.125, low: e3, gate: 0.85}
+    drums:
+      <<: *drumsB
+      events: [{at: "4:13", roll: s, len: 4, ramp: [0.3, 0.9]}]
+
+  # ---- only the machine's heartbeat
+  break:
+    bars: 8
+    chords: "C | C | B | B | Am | Am | F | B"
+    bass:  {gen: riff, steps: "0:12 12:4 | 0:12 12:4 | 0:12 12:4 | 0:12 12:4 | 0:12 12:4 | 0:12 12:4 | 0:3 0:3 12:2 0:6 -1:2 | 0:3 0:3 12:2 0:6 -1:2", low: e2, gate: 0.88}
+    sub:   *sub
+    drone: *drone
+    arp:   {gen: arp, every: 2, rate: 4, duty: 0.25, low: e3, gate: 0.85}
+    drums:
+      k: "x..o............|x..o............|x..o............|x..o............|x..o............|x..o............|x...x...x...x...|x...x...x...x..."
+      m: "..........o.....|..........o.....|..........o.....|..........o.....|..........o.....|..........o.....|................|................"
+      s: "................|................|................|................|................|................|........x.......|................"
+      h: "................|................|................|................|................|................|..g...g...g...g.|g.g.g.g.g.g.g.g."
+      events:
+        - {at: "1:1", hit: c}
+        - {at: "1:1", hit: eerie, len: 96}
+        - {at: "1:1", hit: groan, from: 48, to: 33, dur: 3.2}
+        - {at: "5:1", hit: groan, from: 45, to: 30, dur: 3.2}
+        - {at: "8:1", roll: s, len: 8, every: 2, ramp: [0.15, 1.0]}
+        - {at: "8:9", roll: s, len: 8, ramp: [0.4, 1.0]}
+        - {at: "8:1", hit: hiss, up: true, len: 16}
+
+  # ---- full weight, back into the intro
+  turn:
+    bars: 4
+    chords: "Em | F | C | B"
+    lead: "o4 e4. f8 e4 d8 <b8> | f4. a8 g4 f4 | >c4.< b8 g4 e4 | d+2 f+4 a4"
+    harm: *harm
+    bass: {gen: riff, steps: "0:3 0:3 12:2 0:3 1:3 0:2 | 0:3 0:3 12:2 0:6 -1:2 | 0:3 0:3 12:2 0:6 -1:2 | 0:3 0:3 12:2 0:6 -1:2", low: e2, gate: 0.88}
+    sub:   *sub
+    drone: *drone
+    arp:   {gen: arp, every: 2, rate: 3, duty: 0.125, low: e3, gate: 0.85}
+    drums:
+      k: "x.....o.x.x...o."
+      s: "....x.......x..."
+      h: "g.g.g.g.g.g.g.g."
+      m: ".....o........x."
+      events:
+        - {at: "1:1", hit: c}
+        - {at: "4:9", roll: s, len: 8, ramp: [0.3, 1.0]}
+
+arrangement:
+  - intro
+  - A
+  - B1
+  - B2
+  - {use: break, channels: {arp: {vol: 0.7}}}
+  - turn
