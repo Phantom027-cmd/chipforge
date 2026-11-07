@@ -1,0 +1,58 @@
+# Overworld template: bright major-key theme with a short intro, A / B / A-up / A. Intro then loop.
+chipforge: 1
+title: Overworld Template
+cue: overworld
+tempo: 150
+time: 4/4
+key: G
+chip: nes
+mode: enhanced
+seed: 3
+loop: {from: A}
+
+channels:
+  lead:  {preset: lead.pulse50, pan: 0.1}
+  harm:  {preset: lead.harmony25, vol: 0.6, pan: -0.3, layer: 2}
+  arp:   {preset: arp.pulse12, layer: 2}
+  bass:  {preset: bass.tri_sub}
+  drums: {preset: kit.nes_light}
+
+patterns:
+  intro:
+    bars: 2
+    chords: "G | D7"
+    arp: {gen: arp, rate: 2, every: 4, low: g4}
+    drums: {h: "x.x.x.x.x.x.x.x.", events: [{at: "2:9", roll: s, len: 8, ramp: [0.3, 1.0]}]}
+  A:
+    bars: 8
+    chords: "G | D | Em | C | G | D | C | D"
+    lead: "o5 g8 a8 b4 d4 b8 g8 | a4. f+8 a4 d4 | e8 f+8 g4 b4 g8 e8 | g4 e8 c8 e2 | d4 g8 a8 b4 >d4< | >c8< b8 a4 f+4 d4 | e4 g8 e8 c4 e4 | d2 r4 d8 e8"
+    harm: {gen: harmony, of: lead, interval: -2}
+    bass: {gen: riff, steps: "0 . 0 7 0 . 12 7", low: g2, gate: 0.8}
+    arp:  {gen: arp, rate: 2, every: 4, low: g4}
+    drums:
+      k: "x...x...x...x..."
+      s: "....x.......x..."
+      h: "xgxgxgxgxgxgxgxg"
+      events: [{at: "1:1", hit: c}, {at: "8:13", roll: s, len: 4, ramp: [0.4, 0.9]}]
+    exits: [4, 8]
+  B:
+    bars: 8
+    chords: "Em | C | G | D | Em | C | D | D"
+    lead: "o5 b4 g8 e8 g4 b4 | >c4< b8 a8 g2 | g8 a8 b4 d4 e4 | d4. a8 f+2 | e4 g8 b8 >e4 d8< b8 | >c2< b8 a8 g4 | a4 f+8 a8 d4 e4 | f+2. r4"
+    harm: {gen: harmony, of: lead, interval: -2}
+    bass: {gen: riff, steps: "0 . . 0 . . 0 . 0 . . 0 . . 12 .", low: g2, gate: 0.8}
+    drums:
+      k: "x.....x.x.....x."
+      s: "....x.......x..."
+      h: "x.x.x.x.x.x.x.x."
+      o: "..............x."
+      events: [{at: "8:9", roll: s, len: 8, ramp: [0.3, 1.0]}]
+    exits: [4, 8]
+
+arrangement:
+  - intro
+  - A
+  - B
+  - {use: A, transpose: 2, as: A_up}
+  - {use: A, as: A_end, channels: {lead: {vol: 1.1}}}

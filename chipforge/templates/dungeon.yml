@@ -1,0 +1,49 @@
+# Dungeon template: slow, sparse, minor; drone + cave ambience under a lonely lead. Loop.
+chipforge: 1
+title: Dungeon Template
+cue: dungeon
+tempo: 84
+time: 4/4
+key: Dm
+chip: nes
+mode: enhanced
+seed: 4
+loop: true
+ambience: {bed: cave, level: -16}
+
+channels:
+  lead:  {preset: lead.pulse12, reverb: 0.6, echo: 0.8}
+  pad:   {preset: pad.pulse, layer: 2}
+  drone: {preset: drone.pwm_detuned}
+  bass:  {preset: bass.tri}
+  drums: {preset: kit.nes_dark, vol: 0.7}
+
+patterns:
+  A:
+    bars: 8
+    chords: "Dm | Dm | Bb | A | Dm | Dm | Gm | A"
+    lead: "o5 d2 f4 e4 | d2. r4 | f4 g4 a2 | g4 e4 c+2 | d2 f4 a4 | g2. r4 | b-4 a4 g4 f4 | e2 c+4 r4"
+    pad:  {gen: pad, voicing: [0, 1, 2], low: d4}
+    drone: {gen: drone, low: d2}
+    bass: {gen: riff, steps: "0:8 .:4 0:2 .:2", low: d2, gate: 0.9}
+    drums:
+      k: "x.......|........|x.......|........|x.......|........|x.......|........"
+      m: "........|......o.|........|........|........|......o.|........|......x."
+      events: [{at: "5:1", hit: groan, from: 45, to: 33, dur: 3.0}]
+    exits: [4, 8]
+  B:
+    bars: 8
+    chords: "Gm | Gm | Dm | Dm | Bb | A | Dm | A"
+    lead: "o5 g2 b-4 a4 | g4 f4 d2 | f2 a4 g4 | f4 e4 d2 | d4 f4 b-2 | a4 g4 e2 | f2 d4 e4 | c+1"
+    pad:  {gen: pad, voicing: [0, 1, 2], low: d4}
+    drone: {gen: drone, low: d2}
+    bass: {gen: riff, steps: "0:8 .:4 0:2 .:2", low: d2, gate: 0.9}
+    drums:
+      k: "x.......|........|x.......|........|x.......|........|x.......|x......."
+      events: [{at: "8:9", roll: s, len: 8, every: 2, ramp: [0.1, 0.5]}]
+    exits: [4, 8]
+
+arrangement:
+  - {use: A, mute: [pad]}
+  - B
+  - A

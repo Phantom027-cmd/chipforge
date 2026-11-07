@@ -1,0 +1,55 @@
+# Combat template: fast, riff-driven, two 8-bar halves. Loop.
+chipforge: 1
+title: Combat Template
+cue: combat
+tempo: 172
+time: 4/4
+key: Am
+chip: nes
+mode: enhanced
+seed: 2
+loop: true
+
+channels:
+  lead:  {preset: lead.pulse25}
+  harm:  {preset: lead.harmony50, layer: 2}
+  arp:   {preset: arp.pulse12, layer: 2}
+  bass:  {preset: bass.tri_grit}
+  sub:   {preset: bass.sub}
+  drums: {preset: kit.nes}
+
+patterns:
+  A:
+    bars: 8
+    chords: "Am | Am | F | G | Am | Am | F | E"
+    lead: "o5 a8 a16 a16 >c8< b16 a16 g8 a8 e4 | a8 >c8 e8 d8 c8< b8 a4 | f8 a8 >c4< a8 f8 e4 | g8 b8 >d4< b8 g8 d4 | a8 a16 a16 >c8< b16 a16 g8 a8 e4 | a8 >c8 e8 g8 e8 d8 c4< | f8 a8 >c8 d8 c4< a4 | g+4 e8 g+8 b4 >e4<"
+    harm: {gen: harmony, of: lead, interval: -2, scale: harmonic_minor}
+    bass: {gen: riff, steps: "0 0 12 0 0 12 0 7", low: a1, gate: 0.75}
+    arp:  {gen: arp, tones: [0, 2, 3], rate: 1, every: 1, low: a4}
+    sub:  {gen: root, low: a1, retrig: [0, 8]}
+    drums:
+      k: "x..x..x...x.x..."
+      s: "....x.......x..."
+      h: "xgxgxgxgxgxgxgxg"
+      events: [{at: "1:1", hit: c}, {at: "8:13", roll: s, len: 4, ramp: [0.5, 1.0]}]
+    exits: [4, 8]
+  B:
+    bars: 8
+    chords: "Am | G | F | E | Am | G | F | E"
+    lead: "o5 e8 e16 e16 g8 e8 d4 c4 | d8 d16 d16 f8 d8 c4 <b4> | c8 c16 c16 e8 c8 <b4 a4> | g+4 b4 >e2< | e8 e16 e16 g8 a8 b4 a8 g8 | d8 g8 b8 >d8< b4 g4 | f4 a8 >c8 e4 d8 c8< | b2 >e4< r4"
+    harm: {gen: harmony, of: lead, interval: -2, scale: harmonic_minor}
+    bass: {gen: riff, steps: "0 . 0 . 12 . 0 . 0 . 0 . 7 . 12 .", low: a1, gate: 0.75}
+    arp:  {gen: arp, tones: [0, 2, 3, 5], rate: 1, every: 2, low: a4}
+    sub:  {gen: root, low: a1}
+    drums:
+      k: "x...x...x..x..x."
+      s: "....x.......x..."
+      h: "xgxgxgxgxgxgxgxg"
+      o: "..............x."
+      events: [{at: "1:1", hit: c}, {at: "8:9", roll: s, len: 8, ramp: [0.3, 1.0]}]
+    exits: [4, 8]
+
+arrangement:
+  - {use: A, mute: [harm]}
+  - B
+  - A

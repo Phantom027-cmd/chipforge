@@ -1,0 +1,55 @@
+# Boss template: driving 8-bar theme, a tense break, the theme again a semitone up. Loop.
+chipforge: 1
+title: Boss Template
+cue: boss
+tempo: 160
+time: 4/4
+key: Em
+chip: nes
+mode: enhanced
+seed: 1
+loop: true
+
+channels:
+  lead:  {preset: lead.pulse25}
+  harm:  {preset: lead.harmony50, layer: 2}
+  arp:   {preset: arp.pulse12, layer: 2}
+  bass:  {preset: bass.tri_grit}
+  sub:   {preset: bass.sub}
+  drums: {preset: kit.nes_factory}
+
+patterns:
+  A:
+    bars: 8
+    chords: "Em | Em | C | D | Em | Em | C | B"
+    lead: "o5 e4 g8 e8 b4 a8 g8 | f+4. e8 d4 e4 | c8 e8 g4 f+8 e8 d4 | d8 f+8 a4 g8 f+8 e4 | e4 g8 e8 b4 >d4< | b4. a8 g4 f+4 | e8 g8 >c4< b8 a8 g4 | f+2 r4 d+8 e8"
+    harm: {gen: harmony, of: lead, interval: -2, scale: harmonic_minor}
+    bass: {gen: riff, steps: "0 0 12 0 0 12 0 7", low: e2, gate: 0.82}
+    sub:  {gen: root, low: e1, retrig: [0, 8]}
+    arp:  {gen: arp, every: 2, rate: 1, low: e4}
+    drums:
+      k: "x.....x.x.....x."
+      s: "....x.......x..."
+      h: "x.o.x.o.x.o.x.o."
+      m: "..x.......o..x.."
+      events: [{at: "1:1", hit: c}, {at: "8:13", roll: s, len: 4, ramp: [0.4, 1.0]}]
+    exits: [4, 8]
+  break:
+    bars: 8
+    chords: "C | D | Em | Em | C | D | B | B"
+    lead: "@d(0.5) @vib(0.4,5.8,0.2) o5 r1 | r1 | <b2> e2 | g2 f+4 e4 | g2. e4 | f+2 a2 | b1 | d+4 f+4 a4 b4"
+    bass: {gen: riff, steps: "0:10 12:2 0:4", low: e2, gate: 0.9}
+    sub:  {gen: root, low: e1}
+    arp:  {gen: arp, every: 1, rate: 2, duty: 0.25, low: c4}
+    drums:
+      k: "x.........x....."
+      s: "........x......."
+      o: "..g...g...g...g."
+      events: [{at: "1:1", hit: c}, {at: "1:1", hit: groan, from: 48, to: 36, dur: 2.4}, {at: "8:1", roll: s, len: 16, ramp: [0.2, 1.0]}]
+    exits: [4, 8]
+
+arrangement:
+  - {use: A, mute: [harm]}
+  - A
+  - {use: break, channels: {arp: {vol: 0.75}}}
+  - {use: A, transpose: 1, as: climax}

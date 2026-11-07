@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.6.0 - milestone 6: MCP server
+
+- `chipforge-mcp` (stdio; `uvx --from git+https://github.com/Phantom027-cmd/chipforge chipforge-mcp`):
+  `get_quickref`, `list_presets`, `validate_song`, `render_song`, `analyze_audio`,
+  `compare_versions`, `read_feedback`, `new_song_from_template`. Short text outputs; analysis and
+  compare images are returned as MCP image content. Works with mcp 1.x (FastMCP) and 2.x (MCPServer).
+- Starter templates for every cue type in `chipforge/templates/` (boss, combat, overworld, dungeon,
+  ambience, menu, shop, victory, death, gameover, credits), all validated and rendering.
+- `INTEGRATIONS.md`: client configuration, tool table, and verified notes on ableton-mcp,
+  reaper-mcp and mcp-music-analysis with their limits; SoundFont note.
+- Tests: in-process tool calls, template renders (160 tests).
+
 ## 0.5.0 - milestone 5: the ears
 
 - `chipforge analyze <song.yml | audio>`: JSON report + composite PNG (log spectrogram with section

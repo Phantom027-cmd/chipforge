@@ -1,0 +1,33 @@
+# Shop template: cheerful, bouncy, swing feel, short loop.
+chipforge: 1
+title: Shop Template
+cue: shop
+tempo: 124
+time: 4/4
+key: F
+chip: nes
+mode: enhanced
+seed: 7
+loop: true
+swing: 0.12
+
+channels:
+  lead:  {preset: lead.pulse25}
+  harm:  {preset: lead.harmony50, layer: 2}
+  bass:  {preset: bass.pulse}
+  drums: {preset: kit.nes_light}
+
+patterns:
+  A:
+    bars: 8
+    chords: "F | Bb | F | C7 | F | Bb | C7 | F"
+    lead: "o5 f8 a8 >c4< a8 f8 c4 | d8 f8 b-4 a8 g8 f4 | a8 >c8< a8 f8 e4 c4 | e8 g8 b-4 g8 e8 c4 | f8 a8 >c4 d8 c8< a4 | b-8 >d8 f4 d8< b-8 a4 | g8 b-8 >e4 d8 c8< b-4 | a2 f4 r4"
+    harm: {gen: harmony, of: lead, interval: -2}
+    bass: {gen: riff, steps: "0 . 7 . 0 . 7 .", low: f2, gate: 0.6}
+    drums:
+      k: "x...x...x...x..."
+      s: "....x.......x..."
+      h: "x.x.x.x.x.x.x.x."
+    exits: [4, 8]
+
+arrangement: [A, {use: A, transpose: 5, as: A_up}]

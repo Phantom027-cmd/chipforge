@@ -12,6 +12,12 @@ pip install -e .            # core: numpy, scipy, soundfile, mido, pyyaml
 pip install -e ".[analysis]"   # optional: matplotlib for the analysis images (metrics need nothing extra)
 ```
 
+## MCP (Claude Desktop / Claude Code)
+
+```json
+{"mcpServers": {"chipforge": {"command": "uvx", "args": ["--from", "git+https://github.com/Phantom027-cmd/chipforge", "chipforge-mcp"]}}}
+```
+
 ## Quick start
 
 ```bash
@@ -29,14 +35,14 @@ chipforge presets                                  # instrument library
 - [QUICKREF.md](QUICKREF.md) - song format cheat sheet (what a model reads before composing)
 - [SONG_FORMAT.md](SONG_FORMAT.md) - full field reference (generated from the schema)
 - [PRESETS.md](PRESETS.md) - instrument presets and voice parameters (generated)
+- [INTEGRATIONS.md](INTEGRATIONS.md) - MCP server setup, tools, and third-party MCP servers that pair with it
 - [CHANGELOG.md](CHANGELOG.md)
 - `examples/` - finished tracks; `reference/` - the original proof-of-concept scripts
 
 ## Status
 
-Milestone 5 of 8 (the "ears": `chipforge analyze` / `compare` with LUFS, bands, stereo, seam,
-masking, density, tempo checks, plain-language findings and a composite image). Coming: MCP server,
-review page, templates and the cue guide.
+Milestone 6 of 8 (MCP server with eight tools, starter templates per cue). Coming: the human
+review page + feedback loop, then finished examples, the cue guide, agent workflow and docs polish.
 
 ## Benchmark
 

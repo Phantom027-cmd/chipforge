@@ -1,0 +1,30 @@
+# Death sting template: one-shot, ~3 s, a falling line that lands on a dark chord.
+chipforge: 1
+title: Death Template
+cue: death
+tempo: 120
+time: 4/4
+key: Am
+chip: nes
+mode: enhanced
+seed: 9
+loop: false
+
+channels:
+  lead:  {preset: lead.pulse50, reverb: 0.5}
+  harm:  {preset: lead.harmony25}
+  bass:  {preset: bass.tri_sub}
+  drums: {preset: kit.nes_dark}
+
+patterns:
+  sting:
+    bars: 2
+    chords: "Am | E"
+    lead: "o5 e8 d8 c8 <b8> a4. r8 | @sweep(-12,0.8) g+1"
+    harm: "o4 c8 <b8> a8 g+8 e4. r8 | e1"
+    bass: {gen: riff, steps: "0 . . . . . . . . . . . . . . . | 0:16", low: a1, gate: 0.95}
+    drums:
+      k: "x...............|x..............."
+      events: [{at: "2:1", hit: groan, from: 45, to: 33, dur: 1.6}]
+
+arrangement: [sting]

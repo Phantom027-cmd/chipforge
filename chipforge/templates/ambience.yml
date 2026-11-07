@@ -1,0 +1,26 @@
+# Ambience template: a bed with a barely-there pad; set `ambience.bed` and the key. Loop.
+chipforge: 1
+title: Ambience Template
+cue: ambience
+tempo: 70
+time: 4/4
+key: Em
+chip: nes
+mode: enhanced
+seed: 5
+loop: true
+ambience: {bed: forest, level: -6}
+
+channels:
+  pad: {preset: pad.pulse_wide, vol: 0.5}
+  lead: {preset: lead.tri, vol: 0.4, reverb: 1.2, echo: 0.6}
+
+patterns:
+  A:
+    bars: 8
+    chords: "Em | Em | Cmaj7 | Cmaj7 | Em | Em | D | D"
+    pad: {gen: pad, voicing: [0, 1, 2], low: e4}
+    lead: "o5 r1 | r2 e2 | r1 | g2 f+2 | r1 | r2 b2 | r1 | a2. r4"
+    exits: [4, 8]
+
+arrangement: [A]
