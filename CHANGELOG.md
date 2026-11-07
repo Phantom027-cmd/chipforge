@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.1 - listening feedback: harmony and rhythm
+
+- `harmony` generator has a `mode`: `chord` (new default) picks chord tones at the requested
+  distance (thirds/sixths, never a tritone) so the harmony follows `chords:`; `scale` is the old
+  diatonic-step rule (kept on the two reference ports). Listening note: the SID boss harmony put
+  Ab against Cm and B against Bb for whole sections.
+- `analyze` gains score-based findings: `chord_clash` (note time a semitone above the chord's root
+  or fifth, passing tones excused - it flags exactly the sections the listener named), `clash`
+  (simultaneous semitone/tritone pairs between channels) and `offbeat_drums` (kick/snare hits off
+  the beat; a beat is 4 grid steps). QUICKREF states the beat grid for 4/4 and 3/4.
+- Examples: `overworld_waltz_gameboy` rebuilt on the waltz grid (kick 1, snare 2-3, root-fifth-fifth
+  bass, sub added); `boss_sid` harmony in chord mode; `gameover` harmony note fixed (F over A -> E).
+
 ## 1.0.0 - milestone 8: examples, templates and docs
 
 - Examples for every cue: `dungeon_cave` (cave ambience), `shop` (swing), `victory` (one-shot

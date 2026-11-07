@@ -165,7 +165,9 @@ GEN_SPEC: dict[str, dict[str, F]] = {
     },
     "harmony": {
         "of": F("str", "Channel whose notes to harmonize.", required=True, example="lead"),
-        "interval": F("int", "Scale steps to move; -2 = a diatonic third below.", default=-2, min=-14, max=14),
+        "interval": F("int", "Steps to move; -2 = a third below, -3 a fourth/fifth below, 2 = a third above.", default=-2, min=-14, max=14),
+        "mode": F("str", "chord (default): nearest chord tone at that distance, never a tritone, so it follows `chords:`; "
+                         "scale: diatonic steps in the key scale regardless of the chord.", default="chord", choices=["chord", "scale"]),
         "scale": F("str", "Scale to harmonize in (default: song key).", choices=list(SCALES)),
         "vel": F("num", "Velocity multiplier.", default=0.8, min=0, max=2),
     },

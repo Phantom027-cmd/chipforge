@@ -1,5 +1,6 @@
 # Waltz-time Game Boy overworld. Written from QUICKREF.md alone as the 'fresh model' test, then fixed
-# from two analyzer findings (held bass notes, bass level). 3/4 = 12 steps per bar.
+# from analyzer findings and listening notes. 3/4 = 12 steps per bar, beats on steps 0, 4, 8:
+# kick on 1, snare on 2 and 3, bass root-fifth-fifth, so everything shares the waltz pulse.
 chipforge: 1
 title: Frost Peak
 cue: overworld
@@ -14,28 +15,30 @@ ambience: {bed: wind, level: -22}
 
 channels:
   lead:  {preset: lead.gb_pulse, pan: 0.15}
-  harm:  {preset: lead.gb_organ, vol: 0.5, pan: -0.25, layer: 2}
-  arp:   {preset: arp.gb_pulse, layer: 2}
-  bass:  {preset: bass.gb_wave, vol: 1.1}
+  harm:  {preset: lead.gb_organ, vol: 0.45, pan: -0.25, transpose: -12, layer: 2}
+  arp:   {preset: arp.gb_pulse, vol: 0.8, layer: 2}
+  bass:  {preset: bass.gb_wave, vol: 1.4}
+  sub:   {preset: bass.sub, vol: 0.7}
   drums: {preset: kit.gameboy}
 
 patterns:
   intro:
     bars: 2
     chords: "A | E7"
-    arp: {gen: arp, tones: [0, 1, 2, 3], rate: 2, every: 3, low: a4}
-    drums: {h: "x.x.x.x.x.x.", events: [{at: "2:7", roll: s, len: 6, ramp: [0.3, 1.0]}]}
+    arp: {gen: arp, tones: [0, 1, 2, 3], rate: 2, every: 4, low: a4}
+    drums: {h: "x.x.x.x.x.x.", events: [{at: "2:5", roll: s, len: 8, ramp: [0.3, 1.0]}]}
   A:
     bars: 8
     chords: "A | E | F#m | D | A | E | D | E"
     lead: "o5 a4 >c+4 e4< | b4. a8 g+4 | f+4 a4 >c+4< | d4. e8 f+4 | e4 >c+4< a4 | b4 g+4 e4 | d4 f+4 a4 | g+2 r4"
     harm: {gen: harmony, of: lead, interval: -2}
-    bass: {gen: riff, steps: "0:3 7:3 0:3 12:3", low: a2, gate: 0.8}
-    arp:  {gen: arp, tones: [0, 1, 2, 3], rate: 2, every: 3, low: a4}
+    bass: {gen: riff, steps: "0:4 7:4 7:4", low: a2, gate: 0.8}
+    sub:  {gen: root, low: a1}
+    arp:  {gen: arp, tones: [0, 1, 2, 3], rate: 2, every: 4, low: a4}
     drums:
-      k: "x.....x....."
-      s: "...x.....x.."
-      h: "xgxgxgxgxgxg"
+      k: "x..........."
+      s: "....x...x..."
+      h: "x.x.x.x.x.x."
       events: [{at: "1:1", hit: c}]
     exits: [4, 8]
   B:
@@ -43,13 +46,14 @@ patterns:
     chords: "F#m | D | A | E | F#m | D | E | E"
     lead: "o5 >c+4< a4 f+4 | d4 f+4 a4 | e4 a4 >c+4< | b2 r4 | >c+4 d4 c+4< | a4 f+4 d4 | e4 g+4 b4 | b2. "
     harm: {gen: harmony, of: lead, interval: -2}
-    bass: {gen: riff, steps: "0:3 0:3 7:3 0:3", low: a2, gate: 0.8}
+    bass: {gen: riff, steps: "0:4 7:4 12:4", low: a2, gate: 0.8}
+    sub:  {gen: root, low: a1}
     drums:
-      k: "x.....x....."
-      s: "...x.....x.."
+      k: "x.......x..."
+      s: "....x...x..."
       h: "x.x.x.x.x.x."
       o: "..........x."
-      events: [{at: "8:7", roll: s, len: 6, ramp: [0.3, 1.0]}]
+      events: [{at: "8:5", roll: s, len: 8, ramp: [0.3, 1.0]}]
     exits: [4, 8]
 
 arrangement:

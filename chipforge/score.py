@@ -40,6 +40,7 @@ class Timeline:
     length: float            # seconds (end of arrangement)
     loop_start: float | None  # None = one-shot
     step_s: float
+    chords: list = field(default_factory=list)   # (start_s, end_s, Chord) over the whole arrangement
 
     @property
     def loop_length(self) -> float | None:
@@ -72,11 +73,13 @@ def build(song: Song) -> Timeline:
     cursor = 0.0  # steps
     last_midi: dict[str, float] = {}
     loop_start = None if not song.loop else 0.0
+    all_chords: list = []
 
     for si, use in enumerate(song.arrangement):
         pat = song.patterns[use.pattern]
         total = pat.bars * spb
         chords = [(s, e, c.transposed(use.transpose)) for s, e, c in pat.chords]
+        all_chords += [((cursor + s) * step_s, (cursor + e) * step_s, c) for s, e, c in chords]
         sec_start = cursor
         if song.loop_from is not None and use.label == song.loop_from and loop_start == 0.0:
             loop_start = cursor * step_s
@@ -131,12 +134,12 @@ def build(song: Song) -> Timeline:
             gen = lane["gen"]
             g = {k: v for k, v in lane.items() if k != "gen"}
             if gen == "harmony":
-                _gen_harmony(song, g, ch, events, si, emit, sec_start, step_s, use)
+                _gen_harmony(song, g, ch, events, si, emit, sec_start, step_s, use, chords)
             else:
                 _gen_chords(song, pat, gen, g, ch, chords, total, emit)
         cursor += total
 
-    return Timeline(song, events, sections, cursor * step_s, loop_start, step_s)
+    return Timeline(song, events, sections, cursor * step_s, loop_start, step_s, all_chords)
 
 
 # ------------------------------------------------------------------ kits
@@ -233,18 +236,47 @@ def _gen_chords(song: Song, pat: Pattern, gen: str, g: dict, ch: str, chords, to
                 emit(ch, s, e - s, c.root_midi(g["octave"], low) + 7, 0.7, gate=1.0)
 
 
-def _gen_harmony(song: Song, g: dict, ch: str, events: list[Event], si: int, emit, sec_start, step_s, use: Use):
+def harmony_note(midi: int, chord: Chord | None, interval: int, root_pc: int, scale: list[int], mode: str) -> int:
+    """Harmony note for a melody note. mode 'chord': the chord tone a third-ish away (3-9 semitones,
+    never a tritone), so the harmony always agrees with the current chord; 'scale': a diatonic
+    step count in the key scale (the classic 'third below' rule). Positive interval = above."""
+    if mode == "chord" and chord is not None:
+        below = interval < 0
+        pcs = {(chord.root + t) % 12 for t in chord.tones}
+        best, best_rank = None, 99
+        for d in range(1, 13):
+            cand = midi - d if below else midi + d
+            if cand % 12 not in pcs or d == 6:
+                continue
+            want = abs(interval)
+            # preferred intervals by requested step size: thirds for 2, fourths/fifths for 3-4, sixths for 5
+            pref = {2: [3, 4, 5, 7, 8, 9], 3: [5, 7, 3, 4, 8, 9], 4: [7, 5, 8, 9, 3, 4], 5: [8, 9, 7, 5, 3, 4]}.get(want, [3, 4, 5, 7, 8, 9])
+            if want >= 7:
+                pref = [12, 8, 9, 7]
+            if d in pref:
+                rank = pref.index(d)
+                if rank < best_rank:
+                    best, best_rank = cand, rank
+        if best is not None:
+            return best
+    return scale_step(midi, root_pc, scale, interval)
+
+
+def _gen_harmony(song: Song, g: dict, ch: str, events: list[Event], si: int, emit, sec_start, step_s, use: Use,
+                 chords=()):
     scale = SCALES[g["scale"]] if g.get("scale") else SCALES[song.key_mode]
+    mode = g.get("mode", "chord") if chords else "scale"
     src = [e for e in events if e.ch == g["of"] and e.section == si and e.midi is not None]
     c_src, c_dst = song.channels[g["of"]], song.channels[ch]
     for e in src:
         tr = c_src.transpose + use.transpose + use.channels.get(g["of"], {}).get("transpose", 0)
         base = int(round(e.midi)) - tr                    # harmonize in the written key, then re-transpose
-        h = scale_step(base, song.key_root, scale, g["interval"]) + use.transpose
+        step = e.t / step_s - sec_start
+        chord = _chord_at([(a, b, c.transposed(-use.transpose)) for a, b, c in chords], step) if chords else None
+        h = harmony_note(base, chord, g["interval"], song.key_root, scale, mode) + use.transpose
         params = {k: v for k, v in e.params.items() if k != "slide_from"}
         if "slide_from" in e.params:
-            params["slide_from"] = scale_step(int(round(e.params["slide_from"])) - tr,
-                                              song.key_root, scale, g["interval"]) + use.transpose + c_dst.transpose
-        step = e.t / step_s - sec_start
+            params["slide_from"] = harmony_note(int(round(e.params["slide_from"])) - tr, chord, g["interval"],
+                                                song.key_root, scale, mode) + use.transpose + c_dst.transpose
         src_scale = use.vol * use.channels.get(g["of"], {}).get("vol", 1.0)
         emit(ch, step, e.dur / step_s, h, e.vel * g["vel"] / src_scale, params=params, gate=1.0)

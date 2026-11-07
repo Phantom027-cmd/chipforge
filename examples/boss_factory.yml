@@ -45,7 +45,7 @@ patterns:
     bars: 4
     chords: "Em | Em | C | C"
     lead: "o5 e4 <b8> e8 f+8 g4 f+8 | e4. d8 <b2> | c8 e8 g4 f+8 e8 d8 e8 | c2 d4 e4"
-    harm: &harm {gen: harmony, of: lead, interval: -2, scale: harmonic_minor}
+    harm: &harm {gen: harmony, of: lead, interval: -2, scale: harmonic_minor, mode: scale}   # scale-mode harmony keeps the reference's sound; chord mode (default) is cleaner
     bass: *ost
     sub:  *sub8
     drums: &drumsA

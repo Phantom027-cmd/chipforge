@@ -9,7 +9,7 @@ chipforge: 1
 title: Cave Theme
 cue: dungeon            # boss combat overworld dungeon ambience menu shop victory death gameover credits
 tempo: 110
-time: 4/4                # a bar = 16 grid steps (16ths); 3/4 = 12 steps, 6/8 = 12
+time: 4/4                # a bar = 16 grid steps (16ths), beats on steps 0 4 8 12; 3/4 = 12 steps, beats 0 4 8
 key: Dm                  # C, Em, F#m, Bb, "E phrygian" ...
 chip: nes                # nes gameboy sid fm gm
 mode: enhanced           # enhanced = stereo + reverb + sub; authentic = raw hardware mono, channel limits enforced
@@ -82,7 +82,7 @@ rolls `{at: "4:9", roll: s, len: 8, ramp: [0.3, 1.0]}`. `at` is 1-based `"bar:st
 |---|---|---|
 | `riff` | `steps: "0 0 12 . 0:3 7:1"`, `low: e2` or `octave`, `gate`, `follow: bass` | semitone offsets from each chord's root, one token per 16th step: `.` rest, `n:len` held for len steps; must fill the pattern or divide it evenly |
 | `arp` | `tones: [0,1,2,3]`, `rate` (frames per step), `every` (grid steps), `low`/`octave`, `duty` | classic 60 Hz chord arpeggio |
-| `harmony` | `of: lead`, `interval: -2` (scale steps), `scale: harmonic_minor` | harmonizes another channel |
+| `harmony` | `of: lead`, `interval: -2` (third below; 2 = above), `mode: chord` (default, follows `chords:`) or `scale` | harmonizes another channel with chord tones |
 | `root` | `low: e1`, `retrig: [0, 8]`, `gate` | holds the chord root (sub-bass) |
 | `pad` | `voicing: [0,1,2]`, `low`/`octave` | held chord tones |
 | `drone` | `low: e2`, `fifth: true`, `merge: true` | one long note per chord run |

@@ -148,7 +148,8 @@ Lengths are note values (4 = quarter, 8 = eighth). A string that divides the pat
 | field | type | default | description |
 |---|---|---|---|
 | `of` | str | **required** | Channel whose notes to harmonize. Example: `lead`. |
-| `interval` | int | `-2` | Scale steps to move; -2 = a diatonic third below. Range -14..14. |
+| `interval` | int | `-2` | Steps to move; -2 = a third below, -3 a fourth/fifth below, 2 = a third above. Range -14..14. |
+| `mode` | str | `chord` | chord (default): nearest chord tone at that distance, never a tritone, so it follows `chords:`; scale: diatonic steps in the key scale regardless of the chord. One of: `chord`, `scale`. |
 | `scale` | str |  | Scale to harmonize in (default: song key). One of: `major`, `minor`, `harmonic_minor`, `melodic_minor`, `dorian`, `phrygian`, `phrygian_dominant`, `neapolitan_minor`, `lydian`, `mixolydian`, `locrian`, `pentatonic_major`, `pentatonic_minor`, `blues`, `whole_tone`, `chromatic`. |
 | `vel` | num | `0.8` | Velocity multiplier. Range 0..2. |
 

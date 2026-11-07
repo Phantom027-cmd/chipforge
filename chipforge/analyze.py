@@ -40,6 +40,10 @@ THRESHOLDS = {
     "tempo_tolerance": 2.0,     # BPM
     "onset_grid": 0.6,          # fraction of onsets within 20 ms of the 16th grid
     "density_max": 20.0,        # melodic notes per second per section (drum hits excluded)
+    "clash_frac": 0.12,         # share of simultaneous melodic note pairs a semitone / tritone apart
+    "offbeat_frac": 0.45,       # share of kick + snare hits that land on a beat
+    "rub_frac": 0.12,           # share of a channel's note time a semitone above a chord tone (passing tones excluded)
+
 }
 
 
@@ -197,6 +201,94 @@ def grid_alignment(times: np.ndarray, tempo: float, step_div: int = 4, tol: floa
     return float((off < tol).mean())
 
 
+def harmonic_clashes(score_events, sections: list[dict]) -> list[dict]:
+    """Per section: fraction of overlapping melodic note pairs (different channels) that are a
+    semitone or a tritone apart - the intervals that sound wrong between a lead and its harmony."""
+    notes = [(e[0], e[1], e[1] + max(e[2], 0.05), int(round(e[3]))) for e in score_events if e[3] is not None]
+    out = []
+    for s in sections:
+        seg = [n for n in notes if s["start"] <= n[1] < s["end"]]
+        seg.sort(key=lambda n: n[1])
+        pairs = bad = 0
+        worst: dict = {}
+        for i, a in enumerate(seg):
+            for b in seg[i + 1:]:
+                if b[1] >= a[2]:
+                    break
+                if a[0] == b[0]:
+                    continue
+                ic = abs(a[3] - b[3]) % 12
+                pairs += 1
+                if ic in (1, 11, 6):
+                    bad += 1
+                    key = tuple(sorted((a[0], b[0])))
+                    worst[key] = worst.get(key, 0) + 1
+        if pairs:
+            top = max(worst.items(), key=lambda kv: kv[1])[0] if worst else None
+            out.append({"section": s["label"], "pairs": pairs, "clash_fraction": round(bad / pairs, 3),
+                        "between": list(top) if top else None})
+    return out
+
+
+def chord_clashes(score_events, chords, sections: list[dict], min_dur: float = 0.1) -> list[dict]:
+    """Per section and channel: share of melodic note-time that sits a semitone above the chord's root
+    or fifth without being a chord tone (the b9 / b13 rub that makes a harmony line sound wrong
+    against the bass; stepwise passing tones are excused), plus the share outside the chord."""
+    out = []
+    if not chords:
+        return out
+    starts = np.array([c[0] for c in chords])
+    by_ch: dict[str, list] = {}
+    for e in score_events:
+        if e[3] is not None:
+            by_ch.setdefault(e[0], []).append(e)
+    for v in by_ch.values():
+        v.sort(key=lambda e: e[1])
+    beat = (chords[0][1] - chords[0][0]) / 4 if chords else 0.5
+    for s in sections:
+        per: dict[str, list] = {}
+        for ch, evs in by_ch.items():
+            for k, e in enumerate(evs):
+                t, d, mi = e[1], e[2], int(round(e[3]))
+                if not (s["start"] <= t < s["end"]) or d < min_dur:
+                    continue
+                i = int(np.searchsorted(starts, t, side="right")) - 1
+                if i < 0:
+                    continue
+                chord = chords[i][2]
+                pcs = {(chord.root + x) % 12 for x in chord.tones}
+                pc = mi % 12
+                # a stepwise passing tone (approached and left by step in one direction, up to a beat long) is melody, not a clash
+                prev_n = int(round(evs[k - 1][3])) if k > 0 else None
+                next_n = int(round(evs[k + 1][3])) if k + 1 < len(evs) else None
+                passing = (prev_n is not None and next_n is not None and 0 < abs(mi - prev_n) <= 2 and 0 < abs(next_n - mi) <= 2
+                           and (mi - prev_n) * (next_n - mi) > 0 and d <= beat * 1.01)
+                sour = {(chord.root + 1) % 12} | ({(chord.root + 8) % 12} if 7 in chord.tones else set())   # b9, b13 against the root/fifth
+                rub = pc not in pcs and pc in sour and not passing
+                per.setdefault(ch, []).append((d, rub, pc not in pcs))
+        for ch, rows in per.items():
+            tot = sum(r[0] for r in rows) or 1e-9
+            out.append({"section": s["label"], "channel": ch, "note_time": round(tot, 2),
+                        "rub_fraction": round(sum(r[0] for r in rows if r[1]) / tot, 3),
+                        "non_chord_fraction": round(sum(r[0] for r in rows if r[2]) / tot, 3)})
+    return out
+
+
+def drum_grid(score_events, step_s: float, steps_per_beat: int = 4) -> dict | None:
+    """How many kick/snare hits sit on a beat (multiples of a quarter note) and on an 8th."""
+    hits = [e[1] for e in score_events if e[3] is None and len(e) > 4 and e[4] in ("k", "s")]
+    if len(hits) < 4 or not step_s:
+        return None
+    steps = np.array(hits) / step_s
+    frac = np.abs(steps - np.round(steps))
+    on_grid = frac < 0.1
+    st = np.round(steps[on_grid]).astype(int)
+    if not len(st):
+        return None
+    return {"hits": int(len(hits)), "on_beat": round(float(np.mean(st % steps_per_beat == 0)), 2),
+            "on_eighth": round(float(np.mean(st % (steps_per_beat // 2) == 0)), 2)}
+
+
 def _section_slices(sections: list[dict], sr: int, n: int):
     out = []
     for s in sections:
@@ -241,6 +333,7 @@ def analyze(source: str | Path, *, out_dir: str | Path | None = None, png: bool 
     sections: list[dict] = []
     loop_start: int | None = None
     score_events = None
+    chords: list = []
     tempo = None
     target = None
     title = src.stem
@@ -255,7 +348,8 @@ def analyze(source: str | Path, *, out_dir: str | Path | None = None, png: bool 
             stems["ambience"] = res.ambience
         sections = [{"label": s.label, "start": s.start, "end": s.end, "exits": s.exits} for s in res.timeline.sections]
         loop_start = res.loop_start
-        score_events = [(e.ch, e.t, e.dur, e.midi) for e in res.timeline.events]
+        score_events = [(e.ch, e.t, e.dur, e.midi, e.piece) for e in res.timeline.events]
+        chords = res.timeline.chords
         tempo, target, title = song.tempo, song.target_lufs, song.title
         audio_path = None
         if out_dir is not None:
@@ -321,12 +415,16 @@ def analyze(source: str | Path, *, out_dir: str | Path | None = None, png: bool 
                "centroid_hz": round(spectral_centroid(seg, sr), 1),
                "bands_db": band_balance(seg, sr)}
         if score_events:
-            cnt = sum(1 for ch, t, d, mi in score_events if s["start"] <= t < s["end"] and mi is not None)
-            hits = sum(1 for ch, t, d, mi in score_events if s["start"] <= t < s["end"] and mi is None)
+            cnt = sum(1 for e in score_events if s["start"] <= e[1] < s["end"] and e[3] is not None)
+            hits = sum(1 for e in score_events if s["start"] <= e[1] < s["end"] and e[3] is None)
             row["notes"], row["hits"] = cnt, hits
             row["notes_per_second"] = round(cnt / max(1e-6, s["end"] - s["start"]), 2)
         sec_rows.append(row)
     m["masking"] = masking(stems, sr, sections) if stems else []
+    if score_events:
+        m["clashes"] = harmonic_clashes(score_events, sections)
+        m["chord_clashes"] = chord_clashes(score_events, chords, sections)
+        m["drum_grid"] = drum_grid(score_events, 60 / tempo / 4 if tempo else 0)
 
     findings = _findings(m, sec_rows, target)
     rep = Report(str(src), m, findings, sec_rows, audio_path=audio_path)
@@ -370,7 +468,9 @@ def _midi_events(path: Path):
                 if msg.note in on:
                     t0 = on.pop(msg.note)
                     sec = lambda tk: mido.tick2second(tk, mf.ticks_per_beat, tempo)
-                    out.append((name, sec(t0), sec(t - t0), msg.note if msg.channel != 9 else None))
+                    kit = msg.channel == 9
+                    piece = {35: "k", 36: "k", 38: "s", 40: "s"}.get(msg.note) if kit else None
+                    out.append((name, sec(t0), sec(t - t0), None if kit else msg.note, piece))
     return out
 
 
@@ -433,6 +533,21 @@ def _findings(m: dict, secs: list[dict], target) -> list[dict]:
         for r in rows:
             if r.get("notes_per_second", 0) > T["density_max"]:
                 add("low", "density", f"section {r['label']} has {r['notes_per_second']:.0f} notes/s; dense, consider thinning arps")
+    for c in m.get("clashes", []):
+        if c["clash_fraction"] > T["clash_frac"] and c["pairs"] >= 8:
+            who = f" between {c['between'][0]} and {c['between'][1]}" if c.get("between") else ""
+            add("high" if c["clash_fraction"] > 2 * T["clash_frac"] else "medium", "clash",
+                f"section {c['section']}: {c['clash_fraction']:.0%} of simultaneous notes{who} are a semitone or tritone "
+                f"apart (dissonant); use `harmony` in chord mode, keep the lead on chord tones on strong beats, or rewrite those bars")
+    for c in m.get("chord_clashes", []):
+        if c["rub_fraction"] > T["rub_frac"] and c["note_time"] > 2:
+            add("medium", "chord_clash", f"section {c['section']}: channel {c['channel']} spends {c['rub_fraction']:.0%} of its "
+                                         f"note time a semitone above the chord's root or fifth (sour against the bass); use "
+                                         f"chord-mode harmony or move those notes onto chord tones")
+    dg = m.get("drum_grid")
+    if dg and dg["on_beat"] < T["offbeat_frac"]:
+        add("medium", "offbeat_drums", f"only {dg['on_beat']:.0%} of kick/snare hits land on a beat (a beat is 4 grid steps: "
+                                       f"steps 0 4 8 12 in 4/4, 0 4 8 in 3/4); the drums fight the melody's pulse")
     for mk in m.get("masking", []):
         if mk["margin_db"] < -T["masking_db"]:
             add("medium", "masking", f"lead is masked by the accompaniment in section {mk['section']} "
@@ -524,6 +639,7 @@ def composite(path: str, x: np.ndarray, sr: int, stems: dict, sections: list[dic
     # 4. piano roll (one LineCollection per channel)
     ax = fig.add_subplot(gs[3])
     if score_events:
+        score_events = [e[:4] for e in score_events]
         chans = sorted({e[0] for e in score_events})
         palette = ["#ffd166", "#06d6a0", "#ef476f", "#8338ec", "#4cc9f0", "#ff9f1c", "#ff6b6b", "#c8b6ff", "#a3e635"]
         col = {c: palette[i % len(palette)] for i, c in enumerate(chans)}

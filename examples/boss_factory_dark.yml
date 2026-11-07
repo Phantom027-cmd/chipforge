@@ -64,7 +64,7 @@ patterns:
     bars: 4
     chords: "Em | Em | F | F"
     lead: "o4 e4. f8 e4 d8 <b8> | e2 ~f4 e4 | a4. g8 f4 e4 | f2 ~e4 f4"
-    harm: &harm {gen: harmony, of: lead, interval: -2, scale: neapolitan_minor}
+    harm: &harm {gen: harmony, of: lead, interval: -2, scale: neapolitan_minor, mode: scale}   # scale-mode harmony keeps the reference's sound; chord mode (default) is cleaner
     bass: {gen: riff, steps: "0:3 0:3 12:2 0:3 1:3 0:2 | 0:3 0:3 12:2 0:3 1:3 0:2 | 0:3 0:3 12:2 0:6 -1:2 | 0:3 0:3 12:2 0:6 -1:2", low: e2, gate: 0.88}
     sub:   *sub
     drone: *drone

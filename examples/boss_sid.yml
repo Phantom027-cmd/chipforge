@@ -1,5 +1,6 @@
 # SID boss with a 4-bar machine-room intro, a break and a semitone climax. Written from QUICKREF.md
-# alone as the 'fresh model' test; one finding fixed (sub level).
+# alone as the 'fresh model' test; fixed from listening notes: the harmony now follows the chords
+# (chord-mode harmony) instead of the key scale, which had put B natural over Bb and Ab chords.
 chipforge: 1
 title: Iron Warden
 cue: boss
@@ -14,7 +15,7 @@ ambience: {bed: machinery, level: -20}
 
 channels:
   lead:  {preset: lead.sid_sync, pan: 0.1}
-  harm:  {preset: lead.sid_pwm, vol: 0.5, pan: -0.3, layer: 2}
+  harm:  {preset: lead.sid_pwm, vol: 0.42, pan: -0.3, layer: 2}
   arp:   {preset: arp.sid_pulse, layer: 2}
   bass:  {preset: bass.sid_saw}
   sub:   {preset: bass.sub, vol: 0.55}

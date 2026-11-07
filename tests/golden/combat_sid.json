@@ -1,42 +1,42 @@
 {
  "lufs": -12.0,
- "true_peak": -3.32,
- "lra": 2.76,
- "centroid_hz": 802.9,
+ "true_peak": -3.38,
+ "lra": 2.73,
+ "centroid_hz": 802.8,
  "stereo_correlation": 0.942,
  "stereo_width": 0.173,
  "bands_db": {
   "sub": -5.4,
   "bass": -4.5,
   "low_mid": -10.5,
-  "mid": -7.5,
+  "mid": -7.6,
   "presence": -11.4,
   "air": -16.2
  },
  "seam": {
-  "step": 0.04056,
-  "step_ratio": 0.059,
-  "flux_ratio": 0.644
+  "step": 0.0292,
+  "step_ratio": 0.042,
+  "flux_ratio": 0.639
  },
- "onsets_per_second": 2.08,
+ "onsets_per_second": 2.11,
  "tempo_detected": 86.1,
  "high_findings": [],
  "sections": [
   {
    "label": "A",
-   "lufs": -11.4
+   "lufs": -11.42
   },
   {
    "label": "break",
-   "lufs": -13.86
+   "lufs": -13.83
   },
   {
    "label": "B",
-   "lufs": -12.01
+   "lufs": -11.98
   },
   {
    "label": "A2",
-   "lufs": -11.36
+   "lufs": -11.38
   }
  ]
 }
