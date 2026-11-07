@@ -346,8 +346,8 @@ kit.gameboy:
   pieces:
     k: {voice: kick, f0: 150, f1: 48, pitch_dec: 0.02, dec: 0.15, click: 0.2, crush: 16, len: 0.25, vol: 0.5, bus: low, gm: 36}
     s: {voice: snare, rate: 16000, short: true, dec: 0.06, tone_f: 160, tone: 0.4, len: 0.18, vol: 0.26, gm: 38}
-    h: {voice: hat, short: true, dec: 0.012, len: 0.04, rate: 32000, vol: 0.06, pan: -0.2, gm: 42}
-    o: {voice: hat, short: true, dec: 0.06, len: 0.14, rate: 32000, vol: 0.06, pan: -0.2, gm: 46}
+    h: {voice: hat, short: true, dec: 0.012, len: 0.04, rate: 32000, vol: 0.045, pan: -0.2, gm: 42}
+    o: {voice: hat, short: true, dec: 0.06, len: 0.14, rate: 32000, vol: 0.045, pan: -0.2, gm: 46}
     c: {voice: crash, dec: 0.45, len: 1.4, vol: 0.08, gm: 49}
 
 # ================================================================ SID

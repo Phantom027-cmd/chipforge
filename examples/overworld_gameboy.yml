@@ -57,6 +57,6 @@ patterns:
 arrangement:
   - intro
   - A
-  - B
+  - {use: B, mute: [arp]}
   - {use: A, transpose: 2, as: A_up}
   - {use: A, as: A_end, channels: {lead: {vol: 1.1}}}

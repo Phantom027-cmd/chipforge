@@ -231,6 +231,7 @@ def mix_parts(song: Song, parts: list[Part], kicks: list, space: Space, enhanced
     buses: dict[tuple, np.ndarray] = {}      # (bus, stem) -> (n, 2)
     echo_in = np.zeros(n)
     rev_in = np.zeros(n)
+    send_by_stem: dict[str, np.ndarray] = {}      # per-stem send envelope share for the returns
     for p in parts:
         x = p.buf * p.mix["vol"]
         if p.mix.get("lp"):
@@ -248,6 +249,10 @@ def mix_parts(song: Song, parts: list[Part], kicks: list, space: Space, enhanced
                 echo_in += x * p.mix["echo"]
             if p.mix.get("reverb"):
                 rev_in += x * p.mix["reverb"]
+            if stems_by and (p.mix.get("echo") or p.mix.get("reverb")):
+                sk = stem_key(p, stems_by)
+                share = np.abs(x) * (p.mix.get("echo", 0) + p.mix.get("reverb", 0))
+                send_by_stem[sk] = send_by_stem[sk] + share if sk in send_by_stem else share
             pan = p.mix["pan"]
             if p.mix.get("width"):
                 bus[:, 0] += x * (1 - pan)
@@ -284,20 +289,25 @@ def mix_parts(song: Song, parts: list[Part], kicks: list, space: Space, enhanced
         for (bus, stem), v in buses.items():
             stems[stem] = stems[stem] + v if stem in stems else v
     if enhanced:
+        returns = np.zeros((n, 2))
         d = int(round(m["echo"]["time"] * song.step_s * sr))
         if np.any(echo_in):
-            e = space.echo(echo_in, d, tuple(m["echo"]["taps"]))
-            out += e
-            for k in stems:
-                stems[k] += e / len(stems)
+            returns += space.echo(echo_in, d, tuple(m["echo"]["taps"]))
         if np.any(rev_in):
             r = m["reverb"]
             ir_l = fx.reverb_ir(sr, r["size"], r["decay"], r["tone"], r["predelay"], song.seed * 7 + 3)
             ir_r = fx.reverb_ir(sr, r["size"], r["decay"], r["tone"], r["predelay"], song.seed * 7 + 4)
-            rv = np.stack([space.conv(rev_in, ir_l), space.conv(rev_in, ir_r)], axis=1)
-            out += rv
+            returns[:, 0] += space.conv(rev_in, ir_l)
+            returns[:, 1] += space.conv(rev_in, ir_r)
+        out += returns
+        if stems and send_by_stem:
+            # give each stem the share of the returns matching its (smoothed, delayed-aware) send level
+            sm = fx.sos("low", 8.0, sr)
+            env = {k: np.maximum(space.filt(v, sm), 0) + 1e-9 for k, v in send_by_stem.items()}
+            total = sum(env.values())
             for k in stems:
-                stems[k] += rv / len(stems)
+                if k in env:
+                    stems[k] += returns * (env[k] / total)[:, None]
     return out, stems
 
 

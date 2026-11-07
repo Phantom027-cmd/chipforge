@@ -9,7 +9,7 @@ modern mix that holds up on phones and laptops - plus an analysis layer that let
 
 ```bash
 pip install -e .            # core: numpy, scipy, soundfile, mido, pyyaml
-pip install -e ".[analysis]"   # optional: LUFS metering, spectrogram images
+pip install -e ".[analysis]"   # optional: matplotlib for the analysis images (metrics need nothing extra)
 ```
 
 ## Quick start
@@ -18,6 +18,8 @@ pip install -e ".[analysis]"   # optional: LUFS metering, spectrogram images
 chipforge quickref                                 # the one page you need to write a song
 chipforge render examples/boss_factory.yml -o out  # wav + preview (loop twice) + stems + midi + json
 chipforge render song.yml -f ogg -f mp3 --stems-by group   # loop-tagged OGG, MP3, instrument stems
+chipforge analyze examples/boss_factory.yml        # metrics + findings + one PNG a model can read
+chipforge compare out/v1.wav out/v2.wav            # side-by-side metrics and spectrograms
 chipforge validate mysong.yml                      # precise, line-numbered errors
 chipforge presets                                  # instrument library
 ```
@@ -32,8 +34,8 @@ chipforge presets                                  # instrument library
 
 ## Status
 
-Milestone 4 of 8 (outputs: WAV/OGG/MP3 with loop points, additive stems by layer / group /
-channel, intro + loop files, MIDI, JSON sidecar). Coming: the `analyze` "ears" module, MCP server,
+Milestone 5 of 8 (the "ears": `chipforge analyze` / `compare` with LUFS, bands, stereo, seam,
+masking, density, tempo checks, plain-language findings and a composite image). Coming: MCP server,
 review page, templates and the cue guide.
 
 ## Benchmark

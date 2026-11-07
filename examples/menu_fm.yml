@@ -46,4 +46,4 @@ patterns:
 
 arrangement:
   - A
-  - B
+  - {use: B, mute: [bell]}

@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.5.0 - milestone 5: the ears
+
+- `chipforge analyze <song.yml | audio>`: JSON report + composite PNG (log spectrogram with section
+  and loop markers, 0-400 Hz bass spectrogram, waveform with stem envelopes and short-term loudness,
+  piano roll) + plain-language findings with thresholds. Works from a song file (renders with group
+  stems and the score) or from an audio file with its sidecar/MIDI.
+- Metrics: integrated / short-term / momentary LUFS, true peak, LRA; band balance against healthy
+  ranges learned from the tuned references; spectral centroid per section; stereo correlation and
+  width; clipping, DC, silence; loop seam (sample step and spectral flux, relative to the song's own
+  transients and section changes); lead-vs-accompaniment masking in 1-4 kHz per section; notes per
+  second and section loudness contrast; detected tempo vs score tempo and onset grid alignment.
+- `chipforge compare A B`: metric deltas and stacked spectrograms.
+- Optional, clearly approximate CLAP semantic tags (`--tags`, needs torch + transformers; degrades
+  gracefully). The analysis payload has an `include_audio` option for a future audio-capable model.
+- Golden-metric regression tests for every example (tolerances, not hashes); examples adjusted from
+  what the images and findings showed (Game Boy hats, menu loop seam and contrast).
+- Tests: 145.
+
 ## 0.4.0 - milestone 4: outputs and loop metadata
 
 - Stems by `layer` (adaptive intensity), `group` (lead / arp / bass / pads / drums / fx) or
