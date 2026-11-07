@@ -28,7 +28,7 @@ BAND_RANGES = {"sub": (-14, -3), "bass": (-9, -1), "low_mid": (-14, -3), "mid": 
                "presence": (-26, -9), "air": (-40, -12)}
 
 THRESHOLDS = {
-    "seam_ratio": 1.5,          # wrap step vs the file's largest normal step
+    "seam_ratio": 1.2,          # wrap step vs the largest step inside the loop (a click exceeds every normal attack)
     "seam_flux": 1.5,           # spectral flux across the wrap vs the file's 95th-percentile flux
     "clip_samples": 10,
     "dc_db": -50,
@@ -140,7 +140,8 @@ def seam_check(x: np.ndarray, sr: int, loop_start: int, boundaries: list[float] 
     section changes (a loop that jumps no more than the song's own section boundaries is fine)."""
     steps = np.abs(np.diff(x, axis=0)).max(axis=1)
     wrap = float(np.abs(x[loop_start] - x[-1]).max())
-    thr = float(np.quantile(steps, 0.9999)) or 1e-9
+    # a click is a step larger than any the file already contains (note attacks included)
+    thr = float(np.max(steps[loop_start:] if loop_start else steps)) or 1e-9
     n = 2048
     win = np.hanning(n)
     m = x.mean(axis=1)

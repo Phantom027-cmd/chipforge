@@ -1,0 +1,35 @@
+# Victory fanfare: a triumphant one-shot, ~6 s, three rising calls and a ring-out on the tonic.
+chipforge: 1
+title: Victory Call
+cue: victory
+tempo: 140
+time: 4/4
+key: C
+chip: nes
+mode: enhanced
+seed: 15
+loop: false
+mix:
+  reverb: {size: 2.5, decay: 0.8, tone: 4500}
+
+channels:
+  lead:  {preset: lead.pulse25, reverb: 0.4}
+  harm:  {preset: lead.harmony50}
+  arp:   {preset: arp.pulse12}
+  bass:  {preset: bass.tri_sub}
+  drums: {preset: kit.nes}
+
+patterns:
+  fanfare:
+    bars: 3
+    chords: "C | F G | C"
+    lead: "o5 g8 g8 g8 r8 >c4< g8 e8 | f8 a8 >c4< g4. e8 | @vib(0.3,5.5,0.3) >c1<"
+    harm: "o5 e8 e8 e8 r8 g4 e8 c8 | d8 f8 a4 e4. c8 | e1"
+    arp:  {gen: arp, rate: 1, every: 2, low: c5}
+    bass: {gen: riff, steps: "0 . . . 0 . . . 0 . . . 0 . . . | 0:8 0:8 | 0:16", low: c2, gate: 0.9}
+    drums:
+      k: "x.x.x...x...x...|x...x...x.......|x..............."
+      s: "....x.......x...|....x...x.x.x.x.|................"
+      events: [{at: "3:1", hit: c}]
+
+arrangement: [fanfare]

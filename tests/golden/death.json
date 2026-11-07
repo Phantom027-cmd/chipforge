@@ -1,0 +1,25 @@
+{
+ "lufs": -14.0,
+ "true_peak": -5.22,
+ "lra": 5.63,
+ "centroid_hz": 349.7,
+ "stereo_correlation": 0.633,
+ "stereo_width": 0.475,
+ "bands_db": {
+  "sub": -4.0,
+  "bass": -5.0,
+  "low_mid": -8.7,
+  "mid": -8.6,
+  "presence": -19.1,
+  "air": -36.2
+ },
+ "onsets_per_second": 2.13,
+ "tempo_detected": 120.2,
+ "high_findings": [],
+ "sections": [
+  {
+   "label": "sting",
+   "lufs": -13.46
+  }
+ ]
+}

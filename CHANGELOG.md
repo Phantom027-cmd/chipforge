@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.0.0 - milestone 8: examples, templates and docs
+
+- Examples for every cue: `dungeon_cave` (cave ambience), `shop` (swing), `victory` (one-shot
+  fanfare), `death` (sting), `gameover` (resolving one-shot), `credits` (GM palette), plus
+  `overworld_waltz_gameboy` (3/4) and `boss_sid`, the two tracks written from QUICKREF.md alone as
+  the fresh-model test. All 13 examples pass `analyze` with no high findings and have golden metrics.
+- `CUE_GUIDE.md` (style bible), `AGENT_WORKFLOW.md` (the iteration loop), `SKILL.md` (agent skill).
+- Validation: riff lengths must fill the pattern or divide it evenly (caught a shifted bass line in
+  the boss port and a wrong fanfare bass); QUICKREF now states steps per bar for 3/4 and 6/8, that
+  a riff token is one 16th, and which lanes each kit has - the three places the fresh-model test stumbled.
+- Circular convolution now runs at a fast FFT length with a folded tail (awkward loop lengths were
+  up to 10x slower). Seam metric compares the wrap step to the largest step inside the loop.
+- README rewritten with benchmark table; 168 tests.
+
 ## 0.7.0 - milestone 7: human feedback loop
 
 - `chipforge review song.yml`: snapshots the current render as a version (`<out>/versions/vN_*`,

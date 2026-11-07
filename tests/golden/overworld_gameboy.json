@@ -15,7 +15,7 @@
  },
  "seam": {
   "step": 0.31121,
-  "step_ratio": 0.693,
+  "step_ratio": 0.553,
   "flux_ratio": 0.945
  },
  "onsets_per_second": 3.73,

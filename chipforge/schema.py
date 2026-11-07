@@ -519,9 +519,15 @@ def validate(data: Any, lines: dict | None = None, file: str | None = None) -> S
                             v.err(lp + ("of",), "a channel cannot harmonize itself")
                     if g == "riff":
                         try:
-                            _parse_riff(gd["steps"])
+                            riff = _parse_riff(gd["steps"])
                         except ValueError as e:
                             v.err(lp + ("steps",), str(e))
+                        rlen = sum(ln for _, ln in riff) * 16 / p["step"]
+                        total = p["bars"] * steps_per_bar
+                        if rlen > total + 1e-6 or (rlen > 0 and abs(total / rlen - round(total / rlen)) > 1e-6):
+                            v.err(lp + ("steps",), f"riff is {rlen:g} steps but the pattern has {total} "
+                                                   f"({p['bars']} bars x {steps_per_bar}); each token is one grid step, "
+                                                   f"'n:len' holds n for len steps - make it fill the pattern or divide it evenly")
                     if gd.get("low") is not None:
                         from .theory import note_to_midi
                         try:

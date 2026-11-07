@@ -93,22 +93,15 @@ def reverb_ir(sr: int, seconds: float, decay: float, lp_hz: float, predelay: flo
     return ir / np.sqrt(np.sum(ir ** 2))
 
 
-_IR_FFT: dict = {}
-
-
 def convolve(x: np.ndarray, ir: np.ndarray, circular: bool) -> np.ndarray:
+    """Convolution with an impulse response. Circular mode = linear convolution at a fast FFT length
+    with the tail folded back to the start, which equals circular convolution for any loop length
+    (an awkward-length direct circular FFT can be 10x slower)."""
     n = len(x)
-    if circular:
-        key = (id(ir), n)
-        H = _IR_FFT.get(key)
-        if H is None:
-            h = np.zeros(n)
-            h[: min(n, len(ir))] = ir[:n]
-            H = _IR_FFT[key] = sfft.rfft(h, workers=-1)
-            if len(_IR_FFT) > 32:
-                _IR_FFT.pop(next(iter(_IR_FFT)))
-        return sfft.irfft(sfft.rfft(x, workers=-1) * H, n, workers=-1)
-    return ss.fftconvolve(x, ir)[:n]
+    y = ss.fftconvolve(x, ir)
+    if not circular:
+        return y[:n]
+    return fold(y, n)
 
 
 def duck_curve(n: int, kicks: list[tuple[int, float]], sr: int, release: float, circular: bool) -> np.ndarray:

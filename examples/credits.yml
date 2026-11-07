@@ -1,0 +1,55 @@
+# Credits: warm 16-bit-style roll with long phrases, a lift to E for the second half. 32 bars at 112 BPM, loops.
+chipforge: 1
+title: Long Road Home
+cue: credits
+tempo: 112
+time: 4/4
+key: D
+chip: gm
+mode: enhanced
+seed: 18
+loop: true
+mix:
+  reverb: {size: 3.0, decay: 1.0, tone: 5000}
+
+channels:
+  lead:  {preset: lead.gm_flute, vol: 0.85, pan: 0.1}
+  harm:  {preset: lead.gm_square, vol: 0.35, pan: -0.3, layer: 2}
+  bell:  {preset: lead.gm_bell, vol: 0.7, layer: 2}
+  pad:   {preset: pad.gm_strings, vol: 0.8, layer: 2}
+  bass:  {preset: bass.gm_pick}
+  drums: {preset: kit.gm, vol: 0.8}
+
+patterns:
+  A:
+    bars: 8
+    chords: "D | Bm | G | A | D | Bm | G | A"
+    lead: "o5 f+4 a4 >d2< | b4 a4 f+2 | g4 b4 >d4< b4 | a2. r4 | f+4 a4 >d4 e4< | b4 >c+4 d2< | g4 b4 a4 g4 | f+2 e2"
+    harm: {gen: harmony, of: lead, interval: -2}
+    bell: {gen: arp, rate: 3, every: 4, low: d5}
+    pad:  {gen: pad, voicing: [0, 1, 2], low: d4}
+    bass: {gen: riff, steps: "0 . . . 7 . . . 0 . . . 12 . . .", low: d2, gate: 0.9}
+    drums:
+      k: "x.......x......."
+      s: "....x.......x..."
+      h: "x.x.x.x.x.x.x.x."
+    exits: [4, 8]
+  B:
+    bars: 8
+    chords: "G | A | Bm | F#m | G | A | D | D"
+    lead: "o5 g2 b4 >d4< | >c+4< a4 f+2 | d4 f+4 b4 a4 | f+2. r4 | g4 b4 >d4 e4< | >c+2< a4 >c+4< | d2. <a4> | f+1"
+    harm: {gen: harmony, of: lead, interval: -2}
+    pad:  {gen: pad, voicing: [0, 1, 2], low: d4}
+    bass: {gen: riff, steps: "0 . . . 7 . . . 0 . . . 12 . . .", low: d2, gate: 0.9}
+    drums:
+      k: "x.......x......."
+      s: "....x.......x..."
+      h: "x.x.x.x.x.x.x.x."
+      o: "..............x."
+    exits: [4, 8]
+
+arrangement:
+  - {use: A, mute: [harm, bell]}
+  - B
+  - {use: A, transpose: 2, as: A_up}
+  - {use: B, transpose: 2, as: B_up}

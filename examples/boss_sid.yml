@@ -1,0 +1,69 @@
+# SID boss with a 4-bar machine-room intro, a break and a semitone climax. Written from QUICKREF.md
+# alone as the 'fresh model' test; one finding fixed (sub level).
+chipforge: 1
+title: Iron Warden
+cue: boss
+tempo: 156
+time: 4/4
+key: Cm
+chip: sid
+mode: enhanced
+seed: 9
+loop: {from: A}
+ambience: {bed: machinery, level: -20}
+
+channels:
+  lead:  {preset: lead.sid_sync, pan: 0.1}
+  harm:  {preset: lead.sid_pwm, vol: 0.5, pan: -0.3, layer: 2}
+  arp:   {preset: arp.sid_pulse, layer: 2}
+  bass:  {preset: bass.sid_saw}
+  sub:   {preset: bass.sub, vol: 0.55}
+  drone: {preset: drone.sid_sync, layer: 3}
+  drums: {preset: kit.sid}
+  sfx:   {preset: kit.sfx}
+
+patterns:
+  intro:
+    bars: 4
+    chords: "Cm | Cm | Ab | G"
+    drone: {gen: drone, low: c2}
+    sub:   {gen: root, low: c1}
+    drums:
+      k: "x.......x.......|x.......x.......|x...x...x...x...|x.x.x.x.x.x.x.x."
+      events: [{at: "4:9", roll: s, len: 8, ramp: [0.2, 1.0]}]
+    sfx: [{at: "1:1", hit: alarm}, {at: "3:1", hit: roar, from: 50, to: 36, dur: 2.0}]
+  A:
+    bars: 8
+    chords: "Cm | Cm | Ab | Bb | Cm | Cm | Ab | G7"
+    lead: "o5 c8 c16 c16 e-8 d8 c4 <g4> | c8 e-8 g8 f8 e-8 d8 c4 | a-8 >c8 e-4 c8< a-8 g4 | b-8 >d8 f4 d8< b-8 f4 | c8 c16 c16 e-8 d8 c4 <g4> | c8 e-8 g8 b-8 g8 f8 e-4 | a-8 >c8 e-8 f8 e-4 c4< | b4 d8 b8 f4 >g4<"
+    harm: {gen: harmony, of: lead, interval: -2, scale: harmonic_minor}
+    bass: {gen: riff, steps: "0 0 12 0 0 12 0 7", low: c2, gate: 0.75}
+    sub:  {gen: root, low: c1, retrig: [0, 8]}
+    arp:  {gen: arp, tones: [0, 1, 2, 3], rate: 1, every: 2, low: c4}
+    drums:
+      k: "x..x..x.x..x..x."
+      s: "....x.......x..."
+      h: "xgxgxgxgxgxgxgxg"
+      events: [{at: "1:1", hit: c}, {at: "8:13", roll: s, len: 4, ramp: [0.5, 1.0]}]
+    exits: [4, 8]
+  break:
+    bars: 8
+    chords: "Fm | Fm | Db | Db | G | G | G | G"
+    lead: "@vib(0.4,5,0.3) o4 f2 a-4 g4 | f2. r4 | f4 a-4 >c2< | b-2 a-4 g4 | b2 >d4< b4 | g2. r4 | f2 d4 f4 | g1"
+    bass: {gen: riff, steps: "0:4 .:4 0:3 .:1 0:2 .:2", low: c2, gate: 0.9}
+    sub:  {gen: root, low: c1}
+    drone: {gen: drone, low: c2}
+    drums:
+      k: "x.......x......."
+      s: "........x......."
+      t: "..............x."
+      events: [{at: "8:9", roll: s, len: 8, ramp: [0.3, 1.0]}]
+    sfx: [{at: "1:1", hit: boom}, {at: "5:1", hit: alarm}]
+    exits: [4, 8]
+
+arrangement:
+  - intro
+  - {use: A, mute: [harm]}
+  - A
+  - {use: break, mute: [arp]}
+  - {use: A, transpose: 1, as: climax, channels: {arp: {vol: 1.2}}}

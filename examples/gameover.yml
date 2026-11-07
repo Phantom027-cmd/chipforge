@@ -1,0 +1,32 @@
+# Game over: a slow descent that resolves on the final minor chord; one-shot, ~10 s.
+chipforge: 1
+title: Fade To Grey
+cue: gameover
+tempo: 72
+time: 4/4
+key: Dm
+chip: nes
+mode: enhanced
+seed: 17
+loop: false
+mix:
+  reverb: {size: 3.0, decay: 1.0, tone: 3500}
+
+channels:
+  lead:  {preset: lead.pulse50, reverb: 0.6, echo: 0.6}
+  harm:  {preset: lead.harmony25, reverb: 0.5}
+  pad:   {preset: pad.pulse}
+  bass:  {preset: bass.tri_sub}
+  drums: {preset: kit.nes_dark, vol: 0.6}
+
+patterns:
+  descent:
+    bars: 3
+    chords: "Dm | Bb A | Dm"
+    lead: "o5 a4 g4 f4 e4 | d4 c+4 d2 | @vib(0.25,5,0.4) d1"
+    harm: "o5 f4 e4 d4 c+4 | <b-4> a4 f2 | f1"
+    pad:  {gen: pad, voicing: [0, 1, 2], low: d4}
+    bass: {gen: root, low: d2, gate: 0.98}
+    drums: {k: "x...............|x.......x.......|x..............."}
+
+arrangement: [descent]

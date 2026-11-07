@@ -1,0 +1,25 @@
+{
+ "lufs": -12.0,
+ "true_peak": -3.95,
+ "lra": 6.04,
+ "centroid_hz": 1076.3,
+ "stereo_correlation": 0.843,
+ "stereo_width": 0.292,
+ "bands_db": {
+  "sub": -4.5,
+  "bass": -5.7,
+  "low_mid": -25.0,
+  "mid": -6.6,
+  "presence": -9.7,
+  "air": -13.5
+ },
+ "onsets_per_second": 1.7,
+ "tempo_detected": 139.7,
+ "high_findings": [],
+ "sections": [
+  {
+   "label": "fanfare",
+   "lufs": -11.56
+  }
+ ]
+}

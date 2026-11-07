@@ -137,7 +137,7 @@ patterns:
     chords: "C | D | B"
     lead: "@vib(0) q7 o5 g8 r16 g8 r16 g8 r8 g8 g8 g8 | a8 r16 a8 r16 a8 r8 a8 a8 a8 | b8 r16 b8 r16 b8 r8 b8 b8 b8"
     harm: "@d(0.5) @vib(0) q7 o5 e8 r16 e8 r16 e8 r8 e8 e8 e8 | f+8 r16 f+8 r16 f+8 r8 f+8 f+8 f+8 | f+8 r16 f+8 r16 f+8 r8 f+8 f+8 f+8"
-    bass: {gen: riff, steps: "0:2 . 0:2 . 0:2 . . . 0:2 0:2 0:2", low: e2, gate: 0.9}
+    bass: {gen: riff, steps: "0:2 . 0:2 . 0:2 . . 0:2 0:2 0:2", low: e2, gate: 0.9}
     sub:  {gen: root, low: e1}
     drums:
       k: "x..x..x...x.x.x."

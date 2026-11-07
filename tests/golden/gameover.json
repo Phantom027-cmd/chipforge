@@ -1,0 +1,25 @@
+{
+ "lufs": -15.0,
+ "true_peak": -7.75,
+ "lra": 6.06,
+ "centroid_hz": 358.7,
+ "stereo_correlation": 0.708,
+ "stereo_width": 0.414,
+ "bands_db": {
+  "sub": -4.8,
+  "bass": -6.3,
+  "low_mid": -10.7,
+  "mid": -4.6,
+  "presence": -21.0,
+  "air": -35.9
+ },
+ "onsets_per_second": 4.08,
+ "tempo_detected": 71.8,
+ "high_findings": [],
+ "sections": [
+  {
+   "label": "descent",
+   "lufs": -14.65
+  }
+ ]
+}

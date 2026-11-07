@@ -11,8 +11,8 @@ def _seam_ok(x: np.ndarray, loop_start: int) -> tuple[bool, float]:
     """A seam click would be a sample step far outside the file's normal step distribution."""
     steps = np.abs(np.diff(x, axis=0)).max(axis=1)
     wrap = np.abs(x[loop_start] - x[-1]).max()
-    thr = np.quantile(steps, 0.9999)
-    return wrap <= 1.5 * thr, float(wrap / (thr or 1.0))
+    thr = np.max(steps[loop_start:])
+    return wrap <= 1.2 * thr, float(wrap / (thr or 1.0))
 
 
 def test_timeline(mini):
