@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chipforge"
-version = "0.6.0"
+version = "0.7.0"
 description = "Retro game music engine: NES / Game Boy / SID / FM chip voices, a compact YAML+MML song format, seamless loops, and analysis tools that let AI models evaluate what they compose."
 readme = "README.md"
 requires-python = ">=3.10"

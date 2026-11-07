@@ -16,7 +16,7 @@ def _call(name, **args):
 def test_tool_list():
     names = {t.name for t in asyncio.run(M.server.list_tools())}
     assert names == {"get_quickref", "list_presets", "validate_song", "render_song", "analyze_audio",
-                     "compare_versions", "read_feedback", "new_song_from_template"}
+                     "compare_versions", "read_feedback", "new_song_from_template", "build_review_page"}
 
 
 def test_quickref_and_presets():

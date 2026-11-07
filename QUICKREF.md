@@ -105,6 +105,7 @@ Presets are tuned to sit together at `vol: 1`. Put the bass on the `low` bus (pr
 `chipforge validate song.yml` → `chipforge render song.yml -o out/` (WAV + preview with the loop
 played twice + stems + MIDI + JSON, normalized to the cue's LUFS target, -1 dBTP) →
 `chipforge analyze song.yml` (LUFS, band balance, seam, masking, contrast, density; findings say what to
-change) → fix → `chipforge compare old.wav new.wav` → repeat. `chipforge ambience cave -s 60` renders a bed alone.
+change) → fix → `chipforge compare old.wav new.wav` → `chipforge review song.yml` (human listens, leaves
+timestamped notes in feedback.json) → read the feedback → repeat. `chipforge ambience cave -s 60` renders a bed alone.
 Keep intros short, end loops on the chord that leads back to the loop start, give every section a
 contrast (drop drums, add a layer, change the duty), and leave 1-4 kHz for the lead.

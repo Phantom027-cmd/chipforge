@@ -31,6 +31,7 @@ git+https://github.com/Phantom027-cmd/chipforge chipforge-mcp`. Once the package
 | `compare_versions(path_a, path_b)` | metric deltas + stacked spectrograms |
 | `read_feedback(path)` | notes from `feedback.json` written by the review page, newest first |
 | `new_song_from_template(cue, path, title, key, tempo, chip)` | a starter song for the cue type |
+| `build_review_page(path, out_dir)` | snapshots the render as a version and builds `review.html` for the human; serve it with `chipforge review` |
 
 Tool text is kept short; everything large is a file path or an image.
 

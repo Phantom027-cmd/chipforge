@@ -111,6 +111,13 @@ def cmd_compare(a):
         print("image:", r["png"])
 
 
+def cmd_review(a):
+    from .review import review
+    page = review(a.song, a.out, serve_page=not a.no_serve, port=a.port, open_browser=not a.no_browser)
+    if a.no_serve:
+        print(f"wrote {page} (open it in a browser; without the local server, use 'download feedback.json')")
+
+
 def cmd_quickref(a):
     p = Path(__file__).parent.parent / "QUICKREF.md"
     if not p.exists():
@@ -143,6 +150,10 @@ def main(argv=None):
     p = sub.add_parser("compare", help="side-by-side metrics and spectrograms for two versions")
     p.add_argument("a"); p.add_argument("b"); p.add_argument("-o", "--out")
     p.set_defaults(fn=cmd_compare)
+    p = sub.add_parser("review", help="build and serve the human review page (player, seam audition, A/B, notes)")
+    p.add_argument("song"); p.add_argument("-o", "--out"); p.add_argument("--port", type=int, default=8765)
+    p.add_argument("--no-serve", action="store_true", help="only write review.html"); p.add_argument("--no-browser", action="store_true")
+    p.set_defaults(fn=cmd_review)
     p = sub.add_parser("ambience", help="render a seamless environment loop on its own")
     p.add_argument("bed", choices=["factory", "cave", "forest", "rain", "wind", "machinery", "water", "crowd"])
     p.add_argument("-s", "--seconds", type=float, default=60); p.add_argument("-o", "--out")

@@ -26,6 +26,7 @@ chipforge render examples/boss_factory.yml -o out  # wav + preview (loop twice) 
 chipforge render song.yml -f ogg -f mp3 --stems-by group   # loop-tagged OGG, MP3, instrument stems
 chipforge analyze examples/boss_factory.yml        # metrics + findings + one PNG a model can read
 chipforge compare out/v1.wav out/v2.wav            # side-by-side metrics and spectrograms
+chipforge review mysong.yml                        # local page: player, seam audition, A/B, notes -> feedback.json
 chipforge validate mysong.yml                      # precise, line-numbered errors
 chipforge presets                                  # instrument library
 ```
@@ -41,8 +42,8 @@ chipforge presets                                  # instrument library
 
 ## Status
 
-Milestone 6 of 8 (MCP server with eight tools, starter templates per cue). Coming: the human
-review page + feedback loop, then finished examples, the cue guide, agent workflow and docs polish.
+Milestone 7 of 8 (review page + feedback loop). Coming: finished examples for every cue, the cue
+guide, agent workflow, SKILL.md and docs polish.
 
 ## Benchmark
 

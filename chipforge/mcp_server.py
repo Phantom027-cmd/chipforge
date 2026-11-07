@@ -146,11 +146,16 @@ def compare_versions(path_a: str, path_b: str, out_dir: str = "") -> list:
 
 @server.tool()
 def read_feedback(path: str) -> str:
-    """Read human feedback saved by the review page (feedback.json next to the song or render).
-    Returns the notes, newest first, or 'no feedback yet'."""
+    """Read human feedback saved by the review page. `path` may be the song file (looks in its _out folder
+    and next to it), the output folder, or feedback.json itself. Returns the notes, newest first."""
     p = Path(path)
-    cands = [p] if p.name == "feedback.json" else [p.parent / "feedback.json", p.with_suffix("") .parent / "feedback.json",
-                                                   Path(str(p.with_suffix("")) + "_out") / "feedback.json"]
+    if p.is_dir():
+        cands = [p / "feedback.json"]
+    elif p.name == "feedback.json":
+        cands = [p]
+    else:
+        cands = [Path(str(p.with_suffix("")) + "_out") / "feedback.json", p.parent / "feedback.json",
+                 p.parent / "out" / "feedback.json"]
     for c in cands:
         if c.exists():
             try:
@@ -167,7 +172,7 @@ def read_feedback(path: str) -> str:
                 rating = f" rating {e['rating']}/5" if e.get("rating") else ""
                 out.append(f"- {e.get('time', '')[:16]}{ver}{where}{rating}: {e.get('note', '')}")
             return "\n".join(out)
-    return "no feedback yet (looked for feedback.json next to the song and in its _out folder)"
+    return "no feedback yet (looked for feedback.json in the song's _out folder, next to the song, and in ./out; pass the folder or file explicitly)"
 
 
 @server.tool()
@@ -200,6 +205,21 @@ def new_song_from_template(cue: str, path: str, title: str = "", key: str = "", 
     return (f"wrote {dst} from the {cue} template. Next: edit the melodies/chords/patterns (presets fit together at "
             f"vol 1), then validate_song and render_song. Changing `key:` does not transpose MML notes; use "
             f"`transpose:` on arrangement items or rewrite the notes.")
+
+
+@server.tool()
+def build_review_page(path: str, out_dir: str = "") -> str:
+    """Snapshot the current render as a new version and (re)build the human review page
+    (out_dir/review.html: player, loop-seam audition, A/B versions, stems, timestamped notes, rating).
+    Returns the page path and the command that serves it; ask the human to open it and leave notes,
+    then call read_feedback."""
+    from .review import review
+    try:
+        page = review(path, out_dir or None, serve_page=False)
+    except Exception as e:
+        return f"error: {e}"
+    return (f"review page: {page}\nServe it with `chipforge review {path}` (opens the browser and saves "
+            f"feedback.json automatically), or open the file directly and use 'download feedback.json'.")
 
 
 def main():

@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.7.0 - milestone 7: human feedback loop
+
+- `chipforge review song.yml`: snapshots the current render as a version (`<out>/versions/vN_*`,
+  keyed by the song file's hash, with its stems and a copy of the song), builds a single-file
+  `review.html` (last 4 versions embedded as OGG) and serves it locally. The page has a Web Audio
+  player with true loop points, a seam-audition button (2 s before the wrap, keeps looping), A/B
+  version switching (B key), stem mutes, a clickable waveform with sections / exits / loop marker,
+  1-5 rating, approve / revise verdicts and timestamped notes (N = note at the current time, Enter
+  saves). Notes are POSTed to the local server and written to `feedback.json` next to the render;
+  without the server the page downloads the file.
+- MCP: `build_review_page` tool; `read_feedback` accepts a song, a folder or the file.
+- Verified in a headless browser (play, seam, A/B, note, verdict, save) and by tests (168).
+
 ## 0.6.0 - milestone 6: MCP server
 
 - `chipforge-mcp` (stdio; `uvx --from git+https://github.com/Phantom027-cmd/chipforge chipforge-mcp`):
