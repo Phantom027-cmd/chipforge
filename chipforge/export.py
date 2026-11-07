@@ -28,9 +28,8 @@ def write_audio(path: Path, x: np.ndarray, sr: int, loop: tuple[int, int] | None
             _add_smpl_chunk(path, sr, loop[0], loop[1])
     elif ext == ".ogg":
         with sf.SoundFile(str(path), "w", sr, x.shape[1] if x.ndim == 2 else 1, format="OGG", subtype="VORBIS") as f:
-            if loop:
-                f.comment = f"LOOPSTART={loop[0]}\nLOOPLENGTH={loop[1] - loop[0]}"
-            f.write(x)
+            for i in range(0, len(x), sr):          # chunked: libsndfile's vorbis encoder crashes on huge writes
+                f.write(x[i:i + sr])
         if loop:
             _patch_ogg_loop_tags(path, loop)
     elif ext == ".mp3":
@@ -60,15 +59,12 @@ def _add_smpl_chunk(path: Path, sr: int, start: int, end: int):
 
 
 def _patch_ogg_loop_tags(path: Path, loop: tuple[int, int]):
-    """Rewrite the Vorbis comment header with LOOPSTART/LOOPLENGTH (RPG Maker / Godot convention)."""
-    try:
-        import mutagen.oggvorbis  # optional
-        f = mutagen.oggvorbis.OggVorbis(str(path))
-        f["LOOPSTART"] = str(loop[0])
-        f["LOOPLENGTH"] = str(loop[1] - loop[0])
-        f.save()
-    except ImportError:
-        pass  # soundfile already wrote the tags when supported; mutagen makes it robust
+    """Add LOOPSTART/LOOPLENGTH Vorbis comments (the RPG Maker / Godot / Unity-plugin convention)."""
+    import mutagen.oggvorbis
+    f = mutagen.oggvorbis.OggVorbis(str(path))
+    f["LOOPSTART"] = str(loop[0])
+    f["LOOPLENGTH"] = str(loop[1] - loop[0])
+    f.save()
 
 
 def write_midi(path: Path, res: RenderResult):
@@ -163,7 +159,7 @@ def write_all(res: RenderResult, out_dir: str | Path, *, formats=("wav",), stems
         paths[f] = str(p)
     if preview and loop:
         pv = np.concatenate([res.mix, res.mix[res.loop_start:]])
-        p = out / f"{base}_preview.wav"
+        p = out / f"{base}_preview.{formats[0]}"
         write_audio(p, pv, sr, None, bits)
         paths["preview"] = str(p)
     if stems:
