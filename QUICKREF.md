@@ -12,12 +12,12 @@ tempo: 110
 time: 4/4
 key: Dm                  # C, Em, F#m, Bb, "E phrygian" ...
 chip: nes                # nes gameboy sid fm gm
-mode: enhanced           # enhanced = stereo + reverb + sub; authentic = raw hardware mono
+mode: enhanced           # enhanced = stereo + reverb + sub; authentic = raw hardware mono, channel limits enforced
 seed: 1
 loop: {from: A}          # true = everything loops; false = one-shot sting; {from: X} = intro before X
 ambience: {bed: cave, level: -19}      # optional environment stem, dB relative to the music
 
-channels:                # name -> preset (+ vol, pan -1..1, layer, echo, reverb, duck, lp, hp, transpose)
+channels:                # name -> preset (+ vol, pan -1..1, layer, echo, reverb, duck, lp, hp, transpose, osc: clean)
   lead:  {preset: lead.pulse25, pan: 0.2}
   harm:  {preset: lead.harmony50, layer: 2}        # layer 2+ = adaptive intensity stems
   arp:   {preset: arp.pulse12, layer: 2}
@@ -88,9 +88,16 @@ rolls `{at: "4:9", roll: s, len: 8, ramp: [0.3, 1.0]}`. `at` is 1-based `"bar:st
 `low: e2` keeps chord roots in the octave starting at E2 (tonic-anchored); `octave: 2` uses plain octaves.
 
 ## Most-used presets (`chipforge presets` for all, PRESETS.md for parameters)
-`lead.pulse25` `lead.pulse50` `lead.pulse12` `lead.harmony50` `lead.harmony25` `lead.tri` `lead.saw`
-`arp.pulse12` `arp.pulse25` · `bass.tri` `bass.tri_grit` `bass.tri_grit_dark` `bass.sub` `bass.chipstack` `bass.pulse`
-`drone.pwm_detuned` `pad.pulse` `fx.eerie` · `kit.nes` `kit.nes_factory` `kit.nes_dark`
+| chip | leads / arps | bass / drone / pad | kits |
+|---|---|---|---|
+| nes | `lead.pulse25` `lead.pulse50` `lead.pulse12` `lead.harmony50` `lead.tri` `arp.pulse12` | `bass.tri_grit` `bass.sub` `bass.chipstack` `bass.pulse` `drone.pwm_detuned` `pad.pulse` | `kit.nes` `kit.nes_factory` `kit.nes_dark` `kit.nes_dpcm` `kit.nes_light` |
+| gameboy | `lead.gb_organ` `lead.gb_pulse` `lead.gb_saw` `arp.gb_pulse` | `bass.gb_wave` | `kit.gameboy` |
+| sid | `lead.sid_saw` `lead.sid_pwm` `lead.sid_sync` `lead.sid_ring` `arp.sid_pulse` | `bass.sid_saw` `bass.sid_pulse` `drone.sid_sync` `pad.sid_pwm` | `kit.sid` |
+| fm | `lead.fm_brass` `lead.fm_bell` `lead.fm_pluck` `lead.fm_epiano` `arp.fm_pluck` | `bass.fm_slap` `bass.fm_sub` `drone.fm_metal` `pad.fm_strings` | `kit.fm` |
+| gm | `lead.gm_square` `lead.gm_saw` `lead.gm_flute` `lead.gm_bell` | `bass.gm_pick` `pad.gm_strings` `pad.gm_organ` | `kit.gm` |
+| any | `fx.eerie` (pad gen) | | `kit.sfx`: clank steam alarm roar boom zap powerup explosion |
+
+Presets are tuned to sit together at `vol: 1`. Put the bass on the `low` bus (presets do this), keep one lead in 1-4 kHz.
 
 ## Workflow
 `chipforge validate song.yml` → `chipforge render song.yml -o out/` (WAV + preview with the loop

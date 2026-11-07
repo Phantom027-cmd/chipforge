@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.2.0 - milestone 2: chip profiles and presets
+
+- Chip profiles: `gameboy` (4-bit 32-step wave channel with named tables, 7-bit metallic noise,
+  64 Hz frames, hard L/C/R panning in authentic mode), `sid` (pulse/saw/tri/noise voice with PWM,
+  ring mod, hard sync, resonant lp/bp/hp filter with envelope and LFO sweeps, 50 Hz frames),
+  `fm` (4-operator phase modulation, the 8 YM2612 algorithms, operator feedback, plus a PSG slot
+  budget), `gm` (band-limited wavetable palette). NES gains a DPCM-style 1-bit delta encoder for kit
+  pieces (`dpcm: true`) and a `tom` voice.
+- Oscillators: PolyBLEP pulse and saw. `osc: clean | naive` per channel; sid/fm/gm default to
+  clean in enhanced mode, nes/gameboy stay naive (the aliasing is the character).
+- Authentic mode: hardware channel budgets are validated (e.g. "authentic nes has 2 pulse
+  channel(s) but 3 are used"), voices without a hardware channel are rejected with the fix in the
+  hint, duty macros snap to legal widths, output is mono, polyphonic pads are refused.
+- Kit pieces can use melodic voices (`voice: fm` kick with `note`, `len`, `sweep`, `arp`).
+- Preset library: 23 -> 66 presets (`kit.sfx` with clank / steam / alarm / roar / boom / zap /
+  powerup / explosion, GB / SID / FM / GM leads, basses, pads, drones and kits).
+- Examples: `overworld_gameboy` (intro + loop), `combat_sid`, `menu_fm`.
+- Tests: every preset renders audibly, authentic-mode rules, PolyBLEP aliasing check (112 tests).
+
 ## 0.1.0 - milestone 1: core engine + song format
 
 - Song format v1: YAML structure, MML note strings, drum step lanes, chord symbols with

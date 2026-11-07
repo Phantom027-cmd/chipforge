@@ -1,0 +1,49 @@
+# Calm title/menu loop in the 16-bit FM style: electric piano, bell arpeggio, soft strings pad,
+# round FM sub and a whisper of hats. 16 bars at 92 BPM.
+chipforge: 1
+title: Starlit Menu
+cue: menu
+tempo: 92
+time: 4/4
+key: C
+chip: fm
+mode: enhanced
+seed: 8
+loop: true
+mix:
+  reverb: {size: 3.0, decay: 0.9, tone: 4000}
+
+channels:
+  piano: {preset: lead.fm_epiano}
+  bell:  {preset: lead.fm_bell, vol: 0.7, pan: 0.3, layer: 2}
+  pad:   {preset: pad.fm_strings, layer: 2}
+  bass:  {preset: bass.fm_sub}
+  drums: {preset: kit.fm, vol: 0.8}
+
+patterns:
+  A:
+    bars: 8
+    chords: "Cmaj7 | Am7 | Fmaj7 | G | Cmaj7 | Em7 | Fmaj7 | G"
+    piano: "o5 e4 g4 >c4< b4 | a4 >c4< e2 | a4 g8 f8 a2 | g4 d4 e8 f8 g4 | e4 g8 >c8 d4< g4 | e2 d4 <b4> | a4 >c8< a8 f2 | g2 r2"
+    bell:  {gen: arp, tones: [0, 1, 2, 3], rate: 4, every: 4, low: c5}
+    pad:   {gen: pad, voicing: [0, 1, 2], low: c4}
+    bass:  {gen: root, low: c2, retrig: [0, 8], gate: 0.95}
+    drums:
+      h: "x.g.x.g.x.g.x.g."
+      k: "x..............."
+    exits: [4, 8]
+  B:
+    bars: 8
+    chords: "Am7 | Fmaj7 | Cmaj7 | G | Am7 | Fmaj7 | Dm7 | G"
+    piano: "o5 c4 e4 a4 g4 | f4 a4 >c2< | e4 d8 c8 <g2> | b4 >d4 c8< b8 a4 | a4 >c4 e4 d4 | c4< a8 g8 f2 | f4 a4 d4 e4 | d2 r4 g8 b8"
+    bell:  {gen: arp, tones: [0, 1, 2, 3], rate: 4, every: 4, low: c5}
+    pad:   {gen: pad, voicing: [0, 1, 2], low: c4}
+    bass:  {gen: root, low: c2, retrig: [0, 8], gate: 0.95}
+    drums:
+      h: "x.g.x.g.x.g.x.g."
+      k: "x......."
+    exits: [4, 8]
+
+arrangement:
+  - A
+  - B

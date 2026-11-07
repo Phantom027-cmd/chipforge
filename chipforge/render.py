@@ -2,13 +2,13 @@
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 import numpy as np
 
 from . import chips, fx, presets as _presets, score
 from .schema import Song
-from .synth import VOICE_FN, Ctx
+from .synth import VOICE_FN, Ctx, dpcm
 
 TAIL_S = 4.0
 
@@ -113,20 +113,29 @@ class _NoteCache:
         return v
 
 
-def _freeze(d: dict):
-    return tuple(sorted((k, tuple(v) if isinstance(v, list) else v) for k, v in d.items()))
+def _freeze(d):
+    """Make nested dict/list params hashable for the note cache."""
+    if isinstance(d, dict):
+        return tuple(sorted((k, _freeze(v)) for k, v in d.items()))
+    if isinstance(d, (list, tuple)):
+        return tuple(_freeze(v) for v in d)
+    return d
 
 
 def _render_voice(voice: str, vp: dict, events, ctx: Ctx, n_buf: int, cache: _NoteCache, sr: int,
-                  octave_shift: int = 0, piece: str | None = None) -> np.ndarray:
+                  octave_shift: int = 0, piece: str | None = None, post: str | None = None) -> np.ndarray:
     fn = VOICE_FN[voice]
     buf = np.zeros(n_buf)
     vp_key = _freeze(vp)
     for e in events:
         n_on = int(round(e.dur * sr))
         midi = (e.midi + 12 * octave_shift) if e.midi is not None else None
-        key = (voice, vp_key, midi, n_on, _freeze(e.params))
-        sig = cache.get(key, lambda: fn(vp, ctx, n_on, midi, e.params))
+        key = (voice, vp_key, midi, n_on, _freeze(e.params), ctx, post)
+
+        def make():
+            sig = fn(vp, ctx, n_on, midi, e.params)
+            return dpcm(sig, sr) if post == "dpcm" else sig
+        sig = cache.get(key, make)
         i = int(round(e.t * sr))
         j = min(i + len(sig), n_buf)
         if j > i:
@@ -134,16 +143,23 @@ def _render_voice(voice: str, vp: dict, events, ctx: Ctx, n_buf: int, cache: _No
     return buf
 
 
-def render_parts(song: Song, tl: score.Timeline, ctx: Ctx, n_buf: int, cache: _NoteCache) -> tuple[list[Part], list]:
+def render_parts(song: Song, tl: score.Timeline, ctx0: Ctx, n_buf: int, cache: _NoteCache) -> tuple[list[Part], list]:
     parts: list[Part] = []
     kicks: list[tuple[int, float]] = []
     sr = song.sr
+    prof = chips.get(song.chip)
     by_ch: dict[str, list] = {}
     for e in tl.events:
         by_ch.setdefault(e.ch, []).append(e)
     for name, ch in song.channels.items():
         evs = by_ch.get(name, [])
         preset = _presets.get(ch.preset)
+        osc = ch.overrides.get("osc")
+        ctx = replace(ctx0, clean=(osc == "clean") if osc else (prof.clean and ctx0.enhanced))
+        if not ctx.enhanced and prof.duties:                # authentic: snap duty macros to legal widths
+            for e in evs:
+                if "d" in e.params:
+                    e.params["d"] = [min(prof.duties, key=lambda x: abs(x - e.params["d"][0]))]
         base_mix = {**_presets.MIX_DEFAULTS, **preset.get("mix", {})}
         if preset["kind"] == "melodic":
             is_stack = preset.get("voice") == "stack"
@@ -167,7 +183,19 @@ def render_parts(song: Song, tl: score.Timeline, ctx: Ctx, n_buf: int, cache: _N
                     continue
                 vparams_raw, pmix = _presets.split_mix(piece)
                 vp = _presets.voice_params(piece["voice"], vparams_raw)
-                buf = _render_voice(piece["voice"], vp, pevs, ctx, n_buf, cache, sr, 0, pc)
+                if piece["voice"] in _presets.MELODIC_VOICES:      # a melodic voice used as a drum/hit
+                    defaults = {k: piece[k] for k in ("sweep", "arp_rate", "d") if k in piece}
+                    for e in pevs:
+                        had_arp = "arp" in e.params
+                        e.params = {**defaults, **e.params}
+                        if e.midi is None:
+                            e.midi = float(e.params.get("note", piece.get("note", 48)))
+                        if "arp" in piece and not had_arp:
+                            e.params["arp"] = [e.midi + o for o in piece["arp"]]
+                        if "len" not in e.params and not e.params.get("dur"):
+                            e.dur = float(piece.get("len", 0.2))
+                buf = _render_voice(piece["voice"], vp, pevs, ctx, n_buf, cache, sr, 0, pc,
+                                    "dpcm" if pmix.get("dpcm") else None)
                 mix = {**base_mix, **pmix}
                 mix["vol"] = pmix.get("vol", 1.0) * base_mix["vol"] * ch.vol
                 mix["pan"] = float(np.clip(mix["pan"] + ch.pan, -1, 1))
@@ -207,7 +235,12 @@ def mix_parts(song: Song, parts: list[Part], kicks: list, space: Space, enhanced
             if p.mix.get("width"):
                 st[:, 1] = space.delay(st[:, 1], int(p.mix["width"] * sr))
         else:
-            st = np.stack([x, x], axis=1)
+            prof = chips.get(song.chip)
+            if prof.pan_steps:                     # e.g. Game Boy: hard left / centre / right
+                pan = float(np.round(p.mix["pan"] * (prof.pan_steps - 1) / 2) * 2 / (prof.pan_steps - 1))
+                st = np.stack([x * (1 if pan <= 0 else 0), x * (1 if pan >= 0 else 0)], axis=1)
+            else:
+                st = np.stack([x, x], axis=1)
         key = (p.mix["bus"], f"layer{p.layer}" if stems_by == "layer" else "all")
         if key in buses:
             buses[key] += st
@@ -257,7 +290,8 @@ def render(song: Song, *, stems: bool = True) -> RenderResult:
     tl = score.build(song)
     prof = chips.get(song.chip)
     enhanced = song.mode == "enhanced"
-    ctx = Ctx(song.sr, prof.frame_hz, prof.vol_bits, prof.tri_steps, enhanced, song.seed)
+    ctx = Ctx(song.sr, prof.frame_hz, prof.vol_bits, prof.tri_steps, enhanced, song.seed,
+              prof.clean and enhanced, prof.noise_short)
     sr = song.sr
     n_total = int(round(tl.length * sr))
     loop_start = int(round(tl.loop_start * sr)) if tl.loop_start is not None else None

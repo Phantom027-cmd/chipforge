@@ -59,17 +59,45 @@ VOICES: dict[str, dict[str, tuple]] = {
         "rel": (0.05, "Release seconds"), "vib": (0.0, "Vibrato depth in semitones"),
         "vib_rate": (5.5, "Vibrato Hz"), "vib_delay": (0.2, "Seconds before vibrato"), "slide": (0.06, "Portamento (s)"),
     },
+    "gbwave": {
+        "table": ("tri", "Game Boy wavetable: saw tri sine square organ bass bell, or 16/32 values 0-15"),
+        "att": (0.0, "Attack seconds"), "dec": (0.2, "Decay seconds"), "sus": (0.8, "Sustain level"),
+        "rel": (0.03, "Release seconds"), "vib": (0.0, "Vibrato depth in semitones"), "vib_rate": (5.5, "Vibrato Hz"),
+        "vib_delay": (0.2, "Seconds before vibrato"), "slide": (0.06, "Portamento (s)"),
+    },
+    "sid": {
+        "wave": ("pulse", "pulse, saw, tri, noise or a list to combine"), "duty": (0.5, "Pulse width"),
+        "pwm": (0.0, "PWM depth"), "pwm_rate": (0.5, "PWM LFO Hz"), "ring": (0.0, "Ring-mod ratio (tri only, 0 = off)"),
+        "sync": (0.0, "Hard-sync master ratio (0 = off)"),
+        "att": (0.005, "Attack s"), "dec": (0.2, "Decay s"), "sus": (0.6, "Sustain"), "rel": (0.1, "Release s"),
+        "cutoff": (0.0, "Filter cutoff Hz (0 = no filter)"), "res": (0.9, "Filter Q (0.5 flat .. 8 screaming)"),
+        "ftype": ("lp", "lp, bp or hp"), "fenv": (0.0, "Filter envelope in octaves (decays with fdec)"),
+        "fdec": (0.2, "Filter envelope decay s"), "flfo": (0.0, "Filter LFO depth in octaves"), "flfo_rate": (0.3, "Filter LFO Hz"),
+        "vib": (0.0, "Vibrato depth in semitones"), "vib_rate": (6.0, "Vibrato Hz"), "vib_delay": (0.15, "Seconds before vibrato"),
+        "slide": (0.05, "Portamento (s)"),
+    },
+    "fm": {
+        "alg": (0, "YM2612 algorithm 0-7 (0 = serial chain, 7 = four parallel carriers)"),
+        "ops": ([{"ratio": 1, "level": 1}], "Operators 1-4: {ratio, level, detune, att, dec, sus, rel}"),
+        "feedback": (0.0, "Operator 1 self-feedback 0-1"), "mod_depth": (1.0, "Modulation index scale"),
+        "vib": (0.0, "Vibrato depth in semitones"), "vib_rate": (5.5, "Vibrato Hz"), "vib_delay": (0.2, "Seconds before vibrato"),
+        "slide": (0.05, "Portamento (s)"),
+    },
     # ----- kit / fx pieces
     "kick": {"f0": (210, "Start pitch Hz"), "f1": (42, "End pitch Hz"), "pitch_dec": (0.022, "Pitch decay s"),
              "dec": (0.20, "Amplitude decay s"), "click": (0.5, "Click level"), "click_f": (330, "Click pitch Hz"),
              "crush": (24, "Amplitude quantization levels (0 = off)"), "len": (0.38, "Length s")},
     "snare": {"rate": (22000, "Noise clock Hz"), "dec": (0.075, "Noise decay s"), "tone_f": (190, "Tone Hz"),
               "tone_dec": (0.03, "Tone decay s"), "tone": (0.6, "Tone level"), "crush": (2, "Sample-hold factor"),
-              "len": (0.22, "Length s")},
-    "hat": {"dec": (0.014, "Decay s"), "len": (0.045, "Length s"), "rate": (44100, "Noise clock Hz")},
+              "len": (0.22, "Length s"), "short": (False, "Use the short/metallic LFSR")},
+    "hat": {"dec": (0.014, "Decay s"), "len": (0.045, "Length s"), "rate": (44100, "Noise clock Hz"),
+            "short": (False, "Use the short/metallic LFSR")},
     "clank": {"f1": (587, "Ring freq A Hz"), "f2": (871, "Ring freq B Hz"), "dec": (0.06, "Decay s"),
               "rate": (60000, "Metal noise clock Hz"), "len": (0.22, "Length s"), "crush": (2, "Sample-hold factor")},
-    "crash": {"rate": (32000, "Noise clock Hz"), "dec": (0.55, "Decay s"), "len": (1.8, "Length s")},
+    "crash": {"rate": (32000, "Noise clock Hz"), "dec": (0.55, "Decay s"), "len": (1.8, "Length s"),
+              "short": (False, "Use the short/metallic LFSR")},
+    "tom": {"f0": (220, "Start pitch Hz"), "f1": (90, "End pitch Hz"), "pitch_dec": (0.08, "Pitch decay s"),
+            "dec": (0.18, "Decay s"), "len": (0.3, "Length s"), "noise": (0.15, "Noise mix")},
     "hiss": {"f_lo": (3000, "Low noise clock Hz"), "f_hi": (26000, "High noise clock Hz"),
              "len": (0.6, "Default length s"), "up": (False, "Sweep upward")},
     "groan": {"len": (1.4, "Default length s"), "from": (52, "Default start MIDI"), "to": (40, "Default end MIDI"),
@@ -81,8 +109,12 @@ VOICES: dict[str, dict[str, tuple]] = {
               "wobble": (0.12, "Pitch wobble semitones"), "wobble_rate": (4.3, "Wobble Hz"), "duty": (0.125, "Pulse width")},
 }
 
+# keys on a kit piece that describe how a melodic voice is triggered rather than the voice itself
+TRIGGER_KEYS = ("note", "len", "sweep", "arp", "arp_rate", "d")
+MELODIC_VOICES = {"pulse", "tri", "sine", "grit", "drone", "noise", "wave", "gbwave", "sid", "fm"}
+
 MIX_DEFAULTS = {"vol": 1.0, "pan": 0.0, "bus": "main", "lp": None, "hp": None,
-                "echo": 0.0, "reverb": 0.0, "duck": 0.0, "width": 0.0}
+                "echo": 0.0, "reverb": 0.0, "duck": 0.0, "width": 0.0, "dpcm": False}
 
 
 class PresetError(ValueError):
@@ -138,7 +170,8 @@ def _check(name: str, p: dict):
             if v.get("voice") not in VOICES:
                 raise PresetError(f"preset {name!r} piece {pc!r}: unknown voice {v.get('voice')!r}")
             for k in v:
-                if k not in VOICES[v["voice"]] and k not in MIX_DEFAULTS and k not in ("voice", "gm", "doc"):
+                if k not in VOICES[v["voice"]] and k not in MIX_DEFAULTS and k not in ("voice", "gm", "doc") \
+                        and k not in TRIGGER_KEYS:
                     raise PresetError(f"preset {name!r} piece {pc!r}: voice {v['voice']} has no parameter {k!r}")
     else:
         raise PresetError(f"preset {name!r}: kind must be melodic or kit")
@@ -179,8 +212,8 @@ def voice_params(voice: str, given: dict) -> dict:
 
 
 def split_mix(d: dict) -> tuple[dict, dict]:
-    """Split a piece/layer dict into (voice params, mix settings)."""
-    voice = {k: v for k, v in d.items() if k not in MIX_DEFAULTS and k not in ("gm", "doc")}
+    """Split a piece/layer dict into (voice params, mix settings). Trigger keys are left out."""
+    voice = {k: v for k, v in d.items() if k not in MIX_DEFAULTS and k not in ("gm", "doc") and k not in TRIGGER_KEYS}
     mix = {k: v for k, v in d.items() if k in MIX_DEFAULTS}
     if "mix" in d:
         voice.pop("mix")

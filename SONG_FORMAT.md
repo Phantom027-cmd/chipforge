@@ -56,6 +56,7 @@ Channel names are lowercase identifiers and are referenced by patterns.
 | `transpose` | int | `0` | Semitone transpose for the whole channel. Range -48..48. |
 | `octave` | int |  | Default MML octave for this channel. Range 0..8. |
 | `gm` | int |  | General MIDI program for MIDI export (overrides preset). Range 0..127. |
+| `osc` | str |  | Oscillator quality: naive (aliasing, hardware-like) or clean (band-limited). Default from chip/mode. One of: `naive`, `clean`. |
 
 ## Patterns (`patterns: {name: {...}}`)
 
@@ -204,7 +205,7 @@ Loop points are written to the WAV `smpl` chunk, OGG `LOOPSTART`/`LOOPLENGTH` an
 | chip | description |
 |---|---|
 | `nes` | Nintendo 2A03: 2 pulse (4 duties), 32-step triangle, 15-bit LFSR noise (long/short), DPCM. |
-| `gameboy` | Game Boy DMG: 2 pulse, 4-bit 32-sample wave channel, noise. Stereo on/off panning only. |
-| `sid` | Commodore 64 SID-style: 3 voices of pulse/saw/tri/noise with ring mod, sync and a resonant multimode filter. |
-| `fm` | Genesis-style 4-operator FM: 6 voices, great basses, brass, bells and metallic hits. |
-| `gm` | General-MIDI-style 16-bit palette (wavetable voices; optional SoundFont via FluidSynth). |
+| `gameboy` | Game Boy DMG: 2 pulse, 4-bit 32-sample wave channel, 7/15-bit noise. Hard left/centre/right panning only. |
+| `sid` | Commodore 64 SID-style: 3 voices of pulse/saw/tri/noise with PWM, ring mod, hard sync and a resonant multimode filter. |
+| `fm` | Genesis-style: 6 four-operator FM voices plus a PSG (3 pulse + noise). Basses, brass, bells, metallic hits. |
+| `gm` | General-MIDI-style 16-bit palette: band-limited wavetables and FM, 16 voices, stereo. |

@@ -8,27 +8,40 @@ Presets live in `chipforge/presets.yml`. Melodic presets have a `voice` (or a `s
 
 | preset | voice(s) | mix | description |
 |---|---|---|---|
+| `arp.fm_pluck` | fm | vol 0.1, echo 0.3, pan 0.3 | Short FM pluck for arpeggios. |
+| `arp.gb_pulse` | pulse | vol 0.09, pan 0.3 | 12.5% pulse arp voice for Game Boy songs. |
 | `arp.pulse12` | pulse | vol 0.1, pan 0.3 | Fast 12.5% pulse arpeggio voice; plays chord tones at 60 Hz frame rate via the arp generator. |
 | `arp.pulse25` | pulse | vol 0.06, pan 0.3, lp 2400 | 25% pulse arp; fuller than pulse12. |
+| `arp.sid_pulse` | sid | vol 0.09, pan 0.3 | Thin SID pulse arp with a bright band-pass peak. |
+| `arp.tri` | tri | vol 0.22, pan -0.2 | Triangle arpeggio; soft bell-like roll under a pulse lead. |
 
 ## bass
 
 | preset | voice(s) | mix | description |
 |---|---|---|---|
 | `bass.chipstack` | stack: tri + grit + sine | vol 1.0, bus low, duck 0.6 | Triangle + filtered grit + sine sub one octave down, in one channel. The reference boss bass. |
+| `bass.fm_slap` | fm | vol 0.3, bus low, duck 0.4 | Punchy FM slap bass with a bright attack; the Genesis bass. |
+| `bass.fm_sub` | fm | vol 0.28, bus low, duck 0.5 | Soft FM sub bass (ratio 0.5 modulator); deep and round. |
+| `bass.gb_wave` | gbwave | vol 0.42, bus low | Game Boy wave-channel bass (rounded 4-bit table), the handheld's only real bass. |
+| `bass.gm_pick` | wave | vol 0.32, bus low, duck 0.3 | Picked bass (bass table, quick decay). |
 | `bass.grit` | grit | vol 0.2, bus low, lp 750, duck 0.6 | Low-passed 25% pulse doubling the triangle; adds the bite that reads on small speakers. |
 | `bass.grit_dark` | grit | vol 0.34, bus low, lp 520, duck 0.45 | Detuned two-pulse grit with pitch bite; heavier than bass.grit. |
 | `bass.pulse` | pulse | vol 0.22, bus low | 50% pulse bass with short decay; punchy, for menus and overworld. |
+| `bass.sid_pulse` | sid | vol 0.28, bus low, duck 0.4 | Pulse bass with light PWM and low-pass; rounder than sid_saw. |
+| `bass.sid_saw` | sid | vol 0.28, bus low, duck 0.4 | Saw bass with a snappy filter envelope; punchy C64 bass. |
 | `bass.sub` | sine | vol 0.42, bus low, duck 0.6 | Clean sine sub-bass (41-80 Hz), kick-sidechained. Use with the root generator. |
 | `bass.tri` | tri | vol 0.3, bus low | NES triangle bass; the foundation of every chip bass line. |
 | `bass.tri_grit` | stack: tri + grit | vol 1.0, bus low | Triangle + low-passed grit pulse in one channel (pair with bass.sub on a root generator). |
 | `bass.tri_grit_dark` | stack: tri + grit | vol 1.0, bus low | Triangle + detuned biting grit, darker low-pass (the dark boss bass). |
+| `bass.tri_sub` | stack: tri + sine | vol 1.0, bus low | Triangle one octave down plus sine sub; smooth low end for overworld and menus. |
 
 ## drone
 
 | preset | voice(s) | mix | description |
 |---|---|---|---|
+| `drone.fm_metal` | fm | vol 0.2, bus low, lp 1200, duck 0.3, reverb 0.2 | Inharmonic FM drone (ratio 1.41) with feedback; industrial dread. |
 | `drone.pwm_detuned` | drone | vol 0.3, bus low, lp 1100, duck 0.4, reverb 0.1 | Two detuned PWM pulses plus a fifth; slow beating dread. Low-passed, partly sidechained. |
+| `drone.sid_sync` | sid | vol 0.22, bus low, lp 1500, duck 0.3, reverb 0.15 | Low synced saw drone with a slow filter LFO; menacing floor for dungeons. |
 
 ## fx
 
@@ -40,27 +53,57 @@ Presets live in `chipforge/presets.yml`. Melodic presets have a `voice` (or a `s
 
 | preset | voice(s) | mix | description |
 |---|---|---|---|
+| `kit.fm` | `k`=fm, `s`=snare, `h`=hat, `o`=hat, `t`=fm, `m`=fm, `c`=crash |  | Genesis-style kit - FM kick and toms, PSG noise snare and hats, metallic FM hit. |
+| `kit.gameboy` | `k`=kick, `s`=snare, `h`=hat, `o`=hat, `c`=crash |  | Game Boy kit - wave-channel kick, 7-bit metallic noise snare and hats. |
+| `kit.gm` | `k`=kick, `s`=snare, `h`=hat, `o`=hat, `t`=tom, `c`=crash |  | Cleaner 16-bit-style kit - deeper kick, snappier snare, open hats, toms. |
 | `kit.nes` | `k`=kick, `s`=snare, `h`=hat, `o`=hat, `c`=crash |  | NES drum kit - sine-swept kick, noise snare, LFSR hats, crash. |
 | `kit.nes_dark` | `k`=kick, `s`=snare, `h`=hat, `m`=clank, `c`=crash, `hiss`=hiss, `groan`=groan, `siren`=siren, `eerie`=eerie |  | Heavier, slower kit - longer kick, crushed low snare, ticking hats, dark clank. Reverb-sent. |
+| `kit.nes_dpcm` | `k`=kick, `s`=snare, `h`=hat, `o`=hat, `c`=crash, `t`=tom |  | NES kit with kick and snare crushed through a DPCM-style 1-bit delta encoder. |
 | `kit.nes_factory` | `k`=kick, `s`=snare, `h`=hat, `o`=hat, `c`=crash, `m`=clank, `hiss`=hiss, `groan`=groan, `siren`=siren |  | NES kit plus metal clank and steam hiss; the reference factory-boss kit. |
+| `kit.nes_light` | `k`=kick, `s`=snare, `h`=hat, `o`=hat, `c`=crash |  | Quieter NES kit with ticking hats and a soft snare; menus, shops, overworld. |
+| `kit.sfx` | `clank`=clank, `steam`=hiss, `alarm`=siren, `roar`=groan, `boom`=kick, `zap`=siren, `powerup`=pulse, `explosion`=crash, `eerie`=eerie |  | Sound-effect hits for drama - metal clank, steam, alarm, roar, boom, zap, power-up, explosion. |
+| `kit.sid` | `k`=kick, `s`=snare, `h`=hat, `o`=hat, `t`=tom, `c`=crash |  | C64 kit - pitched-noise kick, filtered noise snare, short metallic hats. |
 
 ## lead
 
 | preset | voice(s) | mix | description |
 |---|---|---|---|
+| `lead.fm_bell` | fm | vol 0.22, reverb 0.7, echo 0.3 | Glassy FM bell (ratio 3.5 modulator); shops, menus, magic. |
+| `lead.fm_brass` | fm | vol 0.2, echo 0.6, reverb 0.2 | 4-op FM brass; bold, slightly raspy, with a swell. The Genesis boss lead. |
+| `lead.fm_epiano` | fm | vol 0.22, reverb 0.5, pan 0 | Electric-piano FM (tine overtone); credits, calm themes. |
+| `lead.fm_pluck` | fm | vol 0.2, echo 0.5 | Bright FM pluck with a fast modulator decay; arps and staccato lines. |
+| `lead.gb_organ` | gbwave | vol 0.2, echo 0.5 | Game Boy wave channel playing a 4-bit organ table; the classic handheld lead. |
+| `lead.gb_pulse` | pulse | vol 0.18, echo 0.6 | Game Boy 50% pulse lead - brighter, no pluck, quick 4-bit envelope. |
+| `lead.gb_saw` | gbwave | vol 0.16, echo 0.5, lp 6000 | 4-bit saw wavetable; buzzy and bright. |
+| `lead.gm_bell` | wave | vol 0.2, reverb 0.7, pan 0.2 | Bell table with long decay; celesta-like twinkle. |
+| `lead.gm_flute` | wave | vol 0.24, reverb 0.5, echo 0.3 | Breathy sine-ish flute (sine table, slow attack, vibrato); calm, overworld, credits. |
+| `lead.gm_saw` | wave | vol 0.15, echo 0.5, reverb 0.2, lp 8000 | Clean saw lead; bright and smooth. |
+| `lead.gm_square` | wave | vol 0.18, echo 0.5, reverb 0.2 | Clean band-limited square lead with vibrato; the 16-bit take on a chip lead. |
 | `lead.harmony25` | pulse | vol 0.07, echo 0, lp 2200, pan -0.3 | 25% pulse harmony voice that pairs with lead.pulse50 (same slow envelope, no echo). |
 | `lead.harmony50` | pulse | vol 0.085, echo 0, pan -0.3 | 50% pulse tuned for harmony parts under lead.pulse25 (lighter vibrato, no pluck, no echo). |
 | `lead.pulse12` | pulse | vol 0.18, echo 0.6 | Thin 12.5% pulse; nasal, cuts through arps. Good for counter-melodies. |
 | `lead.pulse25` | pulse | vol 0.2, echo 1.0 | NES 25% pulse lead with attack pluck and delayed vibrato; the classic boss lead. |
 | `lead.pulse50` | pulse | vol 0.17, echo 0.8, lp 2600 | Hollow 50% pulse lead, slower vibrato; darker and rounder than pulse25. |
+| `lead.pulse75` | pulse | vol 0.2, echo 1.0 | 75% pulse; sounds like 25% on hardware but phase-inverted - use for a second lead voice. |
+| `lead.pulse_soft` | pulse | vol 0.16, echo 0.5, lp 3200, reverb 0.2 | 50% pulse with slow attack and gentle vibrato; menus, overworld B-sections. |
+| `lead.pulse_stab` | pulse | vol 0.18, echo 0.3 | Short 25% pulse stab, no vibrato, hard gate; chords and rhythmic hits. |
 | `lead.saw` | wave | vol 0.16, echo 0.6 | Band-limited saw lead (enhanced / SID-style flavour). |
+| `lead.sid_pwm` | sid | vol 0.17, echo 0.6, reverb 0.15 | Pulse with slow PWM, filtered; hollow and shimmering. |
+| `lead.sid_ring` | sid | vol 0.18, reverb 0.6 | Ring-modulated triangle; bell-like, metallic - menus, magic, eerie leads. |
+| `lead.sid_saw` | sid | vol 0.17, echo 0.6, reverb 0.15 | C64 saw lead through a resonant low-pass with a filter envelope; the SID sound. |
+| `lead.sid_sync` | sid | vol 0.15, echo 0.7, reverb 0.2 | Hard-synced saw with a filter sweep; aggressive, screaming lead for combat. |
 | `lead.tri` | tri | vol 0.3 | NES triangle as a lead; soft, flute-like, no volume envelope. |
 
 ## pad
 
 | preset | voice(s) | mix | description |
 |---|---|---|---|
+| `pad.fm_strings` | fm | vol 0.06, reverb 0.8, lp 4000 | Slow detuned FM strings pad (alg 5, three carriers). |
+| `pad.gm_organ` | wave | vol 0.05, reverb 0.6, lp 5000 | Organ pad (drawbar-style table). |
+| `pad.gm_strings` | wave | vol 0.045, reverb 0.9, lp 3500 | Band-limited saw strings pad, slow and soft (use with the pad generator). |
 | `pad.pulse` | pulse | vol 0.06, reverb 0.5, lp 2000 | Soft 50% pulse pad for held chords (use with the pad generator). |
+| `pad.pulse_wide` | pulse | vol 0.05, reverb 0.8, lp 1800, pan 0 | Detuned 50% pulse pad, wide and slow; use with the pad generator in enhanced mode. |
+| `pad.sid_pwm` | sid | vol 0.06, reverb 0.7, pan 0 | Slow PWM pulse pad with a lazy filter LFO (use with the pad generator). |
 
 ## Voice parameters
 
@@ -151,6 +194,59 @@ Presets live in `chipforge/presets.yml`. Melodic presets have a `voice` (or a `s
 | `vib_delay` | `0.2` | Seconds before vibrato |
 | `slide` | `0.06` | Portamento (s) |
 
+### `gbwave`
+
+| param | default | description |
+|---|---|---|
+| `table` | `tri` | Game Boy wavetable: saw tri sine square organ bass bell, or 16/32 values 0-15 |
+| `att` | `0.0` | Attack seconds |
+| `dec` | `0.2` | Decay seconds |
+| `sus` | `0.8` | Sustain level |
+| `rel` | `0.03` | Release seconds |
+| `vib` | `0.0` | Vibrato depth in semitones |
+| `vib_rate` | `5.5` | Vibrato Hz |
+| `vib_delay` | `0.2` | Seconds before vibrato |
+| `slide` | `0.06` | Portamento (s) |
+
+### `sid`
+
+| param | default | description |
+|---|---|---|
+| `wave` | `pulse` | pulse, saw, tri, noise or a list to combine |
+| `duty` | `0.5` | Pulse width |
+| `pwm` | `0.0` | PWM depth |
+| `pwm_rate` | `0.5` | PWM LFO Hz |
+| `ring` | `0.0` | Ring-mod ratio (tri only, 0 = off) |
+| `sync` | `0.0` | Hard-sync master ratio (0 = off) |
+| `att` | `0.005` | Attack s |
+| `dec` | `0.2` | Decay s |
+| `sus` | `0.6` | Sustain |
+| `rel` | `0.1` | Release s |
+| `cutoff` | `0.0` | Filter cutoff Hz (0 = no filter) |
+| `res` | `0.9` | Filter Q (0.5 flat .. 8 screaming) |
+| `ftype` | `lp` | lp, bp or hp |
+| `fenv` | `0.0` | Filter envelope in octaves (decays with fdec) |
+| `fdec` | `0.2` | Filter envelope decay s |
+| `flfo` | `0.0` | Filter LFO depth in octaves |
+| `flfo_rate` | `0.3` | Filter LFO Hz |
+| `vib` | `0.0` | Vibrato depth in semitones |
+| `vib_rate` | `6.0` | Vibrato Hz |
+| `vib_delay` | `0.15` | Seconds before vibrato |
+| `slide` | `0.05` | Portamento (s) |
+
+### `fm`
+
+| param | default | description |
+|---|---|---|
+| `alg` | `0` | YM2612 algorithm 0-7 (0 = serial chain, 7 = four parallel carriers) |
+| `ops` | `[{'ratio': 1, 'level': 1}]` | Operators 1-4: {ratio, level, detune, att, dec, sus, rel} |
+| `feedback` | `0.0` | Operator 1 self-feedback 0-1 |
+| `mod_depth` | `1.0` | Modulation index scale |
+| `vib` | `0.0` | Vibrato depth in semitones |
+| `vib_rate` | `5.5` | Vibrato Hz |
+| `vib_delay` | `0.2` | Seconds before vibrato |
+| `slide` | `0.05` | Portamento (s) |
+
 ### `kick`
 
 | param | default | description |
@@ -175,6 +271,7 @@ Presets live in `chipforge/presets.yml`. Melodic presets have a `voice` (or a `s
 | `tone` | `0.6` | Tone level |
 | `crush` | `2` | Sample-hold factor |
 | `len` | `0.22` | Length s |
+| `short` | `False` | Use the short/metallic LFSR |
 
 ### `hat`
 
@@ -183,6 +280,7 @@ Presets live in `chipforge/presets.yml`. Melodic presets have a `voice` (or a `s
 | `dec` | `0.014` | Decay s |
 | `len` | `0.045` | Length s |
 | `rate` | `44100` | Noise clock Hz |
+| `short` | `False` | Use the short/metallic LFSR |
 
 ### `clank`
 
@@ -202,6 +300,18 @@ Presets live in `chipforge/presets.yml`. Melodic presets have a `voice` (or a `s
 | `rate` | `32000` | Noise clock Hz |
 | `dec` | `0.55` | Decay s |
 | `len` | `1.8` | Length s |
+| `short` | `False` | Use the short/metallic LFSR |
+
+### `tom`
+
+| param | default | description |
+|---|---|---|
+| `f0` | `220` | Start pitch Hz |
+| `f1` | `90` | End pitch Hz |
+| `pitch_dec` | `0.08` | Pitch decay s |
+| `dec` | `0.18` | Decay s |
+| `len` | `0.3` | Length s |
+| `noise` | `0.15` | Noise mix |
 
 ### `hiss`
 
@@ -246,5 +356,5 @@ Presets live in `chipforge/presets.yml`. Melodic presets have a `voice` (or a `s
 | `wobble_rate` | `4.3` | Wobble Hz |
 | `duty` | `0.125` | Pulse width |
 
-Mix keys usable on any preset, layer or piece: `vol`, `pan`, `bus`, `lp`, `hp`, `echo`, `reverb`, `duck`, `width`.
+Mix keys usable on any preset, layer or piece: `vol`, `pan`, `bus`, `lp`, `hp`, `echo`, `reverb`, `duck`, `width`, `dpcm`.
 

@@ -231,3 +231,471 @@ kit.nes_dark:
     groan: {voice: groan, wobble: 0.7, wobble_rate: 6, noise: 0.35, curve: 0.6, att: 0.15, vol: 0.16, lp: 1500, reverb: 0.25, gm: 87}
     siren: {voice: siren, duty: 0.125, slide: 0.9, vol: 0.06, lp: 2000, reverb: 1.0, gm: 80}
     eerie: {voice: eerie, vol: 0.05, reverb: 0.8, gm: 97}
+
+# ================================================================ more NES / generic
+lead.pulse75:
+  doc: 75% pulse; sounds like 25% on hardware but phase-inverted - use for a second lead voice.
+  extends: lead.pulse25
+  duty: 0.75
+
+lead.pulse_soft:
+  doc: 50% pulse with slow attack and gentle vibrato; menus, overworld B-sections.
+  extends: lead.pulse50
+  att: 0.04
+  dec: 0.3
+  sus: 0.8
+  vib: 0.18
+  pluck: null
+  mix: {vol: 0.16, echo: 0.5, reverb: 0.2, lp: 3200}
+
+lead.pulse_stab:
+  doc: Short 25% pulse stab, no vibrato, hard gate; chords and rhythmic hits.
+  extends: lead.pulse25
+  dec: 0.06
+  sus: 0.3
+  rel: 0.02
+  vib: 0
+  mix: {vol: 0.18, echo: 0.3}
+
+arp.tri:
+  doc: Triangle arpeggio; soft bell-like roll under a pulse lead.
+  voice: tri
+  mix: {vol: 0.22, pan: -0.2}
+  gm: 73
+
+bass.tri_sub:
+  doc: Triangle one octave down plus sine sub; smooth low end for overworld and menus.
+  voice: stack
+  layers:
+    - {voice: tri, vol: 0.30}
+    - {voice: sine, vol: 0.30, octave: -1, duck: 0.4}
+  mix: {vol: 1.0, bus: low}
+  gm: 38
+
+pad.pulse_wide:
+  doc: Detuned 50% pulse pad, wide and slow; use with the pad generator in enhanced mode.
+  extends: pad.pulse
+  detune: 0.5
+  att: 0.4
+  mix: {vol: 0.05, reverb: 0.8, lp: 1800, pan: 0}
+
+kit.nes_dpcm:
+  doc: NES kit with kick and snare crushed through a DPCM-style 1-bit delta encoder.
+  extends: kit.nes
+  pieces:
+    k: {voice: kick, vol: 0.62, bus: low, dpcm: true, gm: 36}
+    s: {voice: snare, vol: 0.30, dpcm: true, gm: 38}
+    t: {voice: tom, vol: 0.4, bus: low, gm: 45}
+
+kit.nes_light:
+  doc: Quieter NES kit with ticking hats and a soft snare; menus, shops, overworld.
+  pieces:
+    k: {voice: kick, f0: 160, f1: 50, dec: 0.12, click: 0.3, len: 0.25, vol: 0.45, bus: low, gm: 36}
+    s: {voice: snare, dec: 0.05, tone: 0.4, len: 0.15, vol: 0.2, gm: 38}
+    h: {voice: hat, dec: 0.01, len: 0.03, vol: 0.06, pan: -0.2, gm: 42}
+    o: {voice: hat, dec: 0.05, len: 0.12, vol: 0.06, pan: -0.2, gm: 46}
+    c: {voice: crash, dec: 0.4, len: 1.2, vol: 0.07, gm: 49}
+
+# ================================================================ Game Boy
+lead.gb_pulse:
+  doc: Game Boy 50% pulse lead - brighter, no pluck, quick 4-bit envelope.
+  voice: pulse
+  duty: 0.5
+  dec: 0.15
+  sus: 0.75
+  rel: 0.04
+  vib: 0.2
+  vib_rate: 6.0
+  mix: {vol: 0.18, echo: 0.6}
+  gm: 80
+
+lead.gb_organ:
+  doc: Game Boy wave channel playing a 4-bit organ table; the classic handheld lead.
+  voice: gbwave
+  table: organ
+  dec: 0.3
+  sus: 0.9
+  vib: 0.15
+  mix: {vol: 0.2, echo: 0.5}
+  gm: 16
+
+lead.gb_saw:
+  doc: 4-bit saw wavetable; buzzy and bright.
+  extends: lead.gb_organ
+  table: saw
+  mix: {vol: 0.16, echo: 0.5, lp: 6000}
+  gm: 81
+
+bass.gb_wave:
+  doc: Game Boy wave-channel bass (rounded 4-bit table), the handheld's only real bass.
+  voice: gbwave
+  table: bass
+  dec: 0.2
+  sus: 0.8
+  rel: 0.02
+  mix: {vol: 0.42, bus: low}
+  gm: 38
+
+arp.gb_pulse:
+  doc: 12.5% pulse arp voice for Game Boy songs.
+  extends: arp.pulse12
+  mix: {vol: 0.09, pan: 0.3}
+
+kit.gameboy:
+  doc: Game Boy kit - wave-channel kick, 7-bit metallic noise snare and hats.
+  pieces:
+    k: {voice: kick, f0: 150, f1: 48, pitch_dec: 0.02, dec: 0.15, click: 0.2, crush: 16, len: 0.25, vol: 0.5, bus: low, gm: 36}
+    s: {voice: snare, rate: 16000, short: true, dec: 0.06, tone_f: 160, tone: 0.4, len: 0.18, vol: 0.26, gm: 38}
+    h: {voice: hat, short: true, dec: 0.012, len: 0.04, rate: 32000, vol: 0.06, pan: -0.2, gm: 42}
+    o: {voice: hat, short: true, dec: 0.06, len: 0.14, rate: 32000, vol: 0.06, pan: -0.2, gm: 46}
+    c: {voice: crash, dec: 0.45, len: 1.4, vol: 0.08, gm: 49}
+
+# ================================================================ SID
+lead.sid_saw:
+  doc: C64 saw lead through a resonant low-pass with a filter envelope; the SID sound.
+  voice: sid
+  wave: saw
+  att: 0.005
+  dec: 0.25
+  sus: 0.6
+  rel: 0.12
+  cutoff: 1800
+  res: 2.5
+  fenv: 1.5
+  fdec: 0.18
+  vib: 0.25
+  vib_rate: 6.5
+  mix: {vol: 0.17, echo: 0.6, reverb: 0.15}
+  gm: 81
+
+lead.sid_pwm:
+  doc: Pulse with slow PWM, filtered; hollow and shimmering.
+  extends: lead.sid_saw
+  wave: pulse
+  duty: 0.35
+  pwm: 0.25
+  pwm_rate: 0.7
+  cutoff: 2600
+  res: 1.2
+  fenv: 0.5
+  gm: 80
+
+lead.sid_sync:
+  doc: Hard-synced saw with a filter sweep; aggressive, screaming lead for combat.
+  extends: lead.sid_saw
+  sync: 1.5
+  cutoff: 1200
+  res: 3.5
+  fenv: 2.5
+  fdec: 0.3
+  flfo: 0.4
+  flfo_rate: 0.25
+  mix: {vol: 0.15, echo: 0.7, reverb: 0.2}
+
+lead.sid_ring:
+  doc: Ring-modulated triangle; bell-like, metallic - menus, magic, eerie leads.
+  voice: sid
+  wave: tri
+  ring: 2.76
+  att: 0.002
+  dec: 0.4
+  sus: 0.3
+  rel: 0.3
+  cutoff: 5000
+  res: 0.8
+  mix: {vol: 0.18, reverb: 0.6}
+  gm: 14
+
+arp.sid_pulse:
+  doc: Thin SID pulse arp with a bright band-pass peak.
+  voice: sid
+  wave: pulse
+  duty: 0.15
+  dec: 0.15
+  sus: 0.2
+  rel: 0.02
+  cutoff: 3000
+  res: 1.5
+  ftype: bp
+  mix: {vol: 0.09, pan: 0.3}
+  gm: 81
+
+bass.sid_saw:
+  doc: Saw bass with a snappy filter envelope; punchy C64 bass.
+  voice: sid
+  wave: saw
+  att: 0.002
+  dec: 0.18
+  sus: 0.5
+  rel: 0.05
+  cutoff: 500
+  res: 1.8
+  fenv: 2.0
+  fdec: 0.12
+  mix: {vol: 0.28, bus: low, duck: 0.4}
+  gm: 38
+
+bass.sid_pulse:
+  doc: Pulse bass with light PWM and low-pass; rounder than sid_saw.
+  extends: bass.sid_saw
+  wave: pulse
+  duty: 0.3
+  pwm: 0.1
+  pwm_rate: 0.4
+  cutoff: 420
+  res: 1.2
+  fenv: 1.2
+
+pad.sid_pwm:
+  doc: Slow PWM pulse pad with a lazy filter LFO (use with the pad generator).
+  voice: sid
+  wave: pulse
+  duty: 0.5
+  pwm: 0.35
+  pwm_rate: 0.3
+  att: 0.3
+  dec: 0.5
+  sus: 0.9
+  rel: 0.5
+  cutoff: 1400
+  res: 1.0
+  flfo: 0.6
+  flfo_rate: 0.15
+  mix: {vol: 0.06, reverb: 0.7, pan: 0}
+  gm: 89
+
+drone.sid_sync:
+  doc: Low synced saw drone with a slow filter LFO; menacing floor for dungeons.
+  voice: sid
+  wave: saw
+  sync: 1.25
+  att: 0.6
+  dec: 0.5
+  sus: 1.0
+  rel: 0.8
+  cutoff: 600
+  res: 2.0
+  flfo: 1.0
+  flfo_rate: 0.12
+  mix: {vol: 0.22, bus: low, lp: 1500, duck: 0.3, reverb: 0.15}
+  gm: 89
+
+kit.sid:
+  doc: C64 kit - pitched-noise kick, filtered noise snare, short metallic hats.
+  pieces:
+    k: {voice: kick, f0: 180, f1: 45, pitch_dec: 0.025, dec: 0.16, click: 0.4, crush: 0, len: 0.3, vol: 0.55, bus: low, gm: 36}
+    s: {voice: snare, rate: 18000, dec: 0.09, tone_f: 170, tone: 0.5, crush: 1, len: 0.2, vol: 0.28, gm: 38}
+    h: {voice: hat, dec: 0.012, len: 0.04, vol: 0.06, pan: -0.2, gm: 42}
+    o: {voice: hat, dec: 0.06, len: 0.15, vol: 0.06, pan: -0.2, gm: 46}
+    t: {voice: tom, vol: 0.35, bus: low, gm: 45}
+    c: {voice: crash, dec: 0.5, len: 1.6, vol: 0.09, gm: 49}
+
+# ================================================================ FM (Genesis-style)
+lead.fm_brass:
+  doc: 4-op FM brass; bold, slightly raspy, with a swell. The Genesis boss lead.
+  voice: fm
+  alg: 2
+  feedback: 0.35
+  ops:
+    - {ratio: 1, level: 0.7, att: 0.01, dec: 0.4, sus: 0.6, rel: 0.1}
+    - {ratio: 1, level: 0.55, att: 0.03, dec: 0.5, sus: 0.5, rel: 0.1, detune: 4}
+    - {ratio: 2, level: 0.4, att: 0.02, dec: 0.3, sus: 0.4, rel: 0.1}
+    - {ratio: 1, level: 1.0, att: 0.015, dec: 0.3, sus: 0.8, rel: 0.12}
+  vib: 0.2
+  vib_rate: 5.5
+  mix: {vol: 0.2, echo: 0.6, reverb: 0.2}
+  gm: 61
+
+lead.fm_bell:
+  doc: Glassy FM bell (ratio 3.5 modulator); shops, menus, magic.
+  voice: fm
+  alg: 0
+  ops:
+    - {ratio: 3.5, level: 0.6, att: 0.001, dec: 0.5, sus: 0.0, rel: 0.4}
+    - {ratio: 1, level: 1.0, att: 0.001, dec: 1.2, sus: 0.0, rel: 0.6}
+  mix: {vol: 0.22, reverb: 0.7, echo: 0.3}
+  gm: 11
+
+lead.fm_pluck:
+  doc: Bright FM pluck with a fast modulator decay; arps and staccato lines.
+  voice: fm
+  alg: 0
+  feedback: 0.2
+  ops:
+    - {ratio: 2, level: 0.9, att: 0.001, dec: 0.08, sus: 0.1, rel: 0.05}
+    - {ratio: 1, level: 1.0, att: 0.001, dec: 0.4, sus: 0.3, rel: 0.08}
+  mix: {vol: 0.2, echo: 0.5}
+  gm: 25
+
+lead.fm_epiano:
+  doc: Electric-piano FM (tine overtone); credits, calm themes.
+  voice: fm
+  alg: 4
+  ops:
+    - {ratio: 14, level: 0.25, att: 0.001, dec: 0.1, sus: 0.0, rel: 0.1}
+    - {ratio: 1, level: 0.8, att: 0.001, dec: 1.5, sus: 0.2, rel: 0.4}
+    - {ratio: 1, level: 0.5, att: 0.001, dec: 0.3, sus: 0.2, rel: 0.3, detune: 6}
+    - {ratio: 1, level: 1.0, att: 0.001, dec: 2.0, sus: 0.3, rel: 0.5}
+  mix: {vol: 0.22, reverb: 0.5, pan: 0}
+  gm: 4
+
+arp.fm_pluck:
+  doc: Short FM pluck for arpeggios.
+  extends: lead.fm_pluck
+  mix: {vol: 0.1, pan: 0.3, echo: 0.3}
+
+bass.fm_slap:
+  doc: Punchy FM slap bass with a bright attack; the Genesis bass.
+  voice: fm
+  alg: 0
+  feedback: 0.5
+  ops:
+    - {ratio: 1, level: 0.9, att: 0.001, dec: 0.12, sus: 0.15, rel: 0.05}
+    - {ratio: 1, level: 1.0, att: 0.001, dec: 0.35, sus: 0.5, rel: 0.06}
+  mix: {vol: 0.3, bus: low, duck: 0.4}
+  gm: 36
+
+bass.fm_sub:
+  doc: Soft FM sub bass (ratio 0.5 modulator); deep and round.
+  voice: fm
+  alg: 0
+  ops:
+    - {ratio: 0.5, level: 0.4, att: 0.005, dec: 0.3, sus: 0.3, rel: 0.05}
+    - {ratio: 1, level: 1.0, att: 0.005, dec: 0.3, sus: 0.8, rel: 0.06}
+  mix: {vol: 0.28, bus: low, duck: 0.5}
+  gm: 39
+
+pad.fm_strings:
+  doc: Slow detuned FM strings pad (alg 5, three carriers).
+  voice: fm
+  alg: 5
+  ops:
+    - {ratio: 1, level: 0.35, att: 0.3, dec: 0.6, sus: 0.6, rel: 0.5}
+    - {ratio: 1, level: 1.0, att: 0.4, dec: 0.5, sus: 0.9, rel: 0.6, detune: -7}
+    - {ratio: 2, level: 0.6, att: 0.5, dec: 0.5, sus: 0.8, rel: 0.6, detune: 5}
+    - {ratio: 1, level: 0.8, att: 0.35, dec: 0.5, sus: 0.9, rel: 0.6, detune: 9}
+  mix: {vol: 0.06, reverb: 0.8, lp: 4000}
+  gm: 48
+
+drone.fm_metal:
+  doc: Inharmonic FM drone (ratio 1.41) with feedback; industrial dread.
+  voice: fm
+  alg: 1
+  feedback: 0.6
+  ops:
+    - {ratio: 1.41, level: 0.6, att: 0.5, dec: 1.0, sus: 0.7, rel: 0.8}
+    - {ratio: 0.5, level: 0.4, att: 0.6, dec: 1.0, sus: 0.8, rel: 0.8}
+    - {ratio: 1, level: 0.5, att: 0.4, dec: 1.0, sus: 0.7, rel: 0.8}
+    - {ratio: 1, level: 1.0, att: 0.5, dec: 1.0, sus: 0.9, rel: 0.9}
+  mix: {vol: 0.2, bus: low, lp: 1200, duck: 0.3, reverb: 0.2}
+  gm: 89
+
+kit.fm:
+  doc: Genesis-style kit - FM kick and toms, PSG noise snare and hats, metallic FM hit.
+  pieces:
+    k: {voice: fm, note: 38, len: 0.3, sweep: [-18, 0.05], alg: 0, feedback: 0.3, ops: [{ratio: 1, level: 0.6, dec: 0.05, sus: 0}, {ratio: 1, level: 1, dec: 0.22, sus: 0, rel: 0.05}], vol: 0.65, bus: low, gm: 36}
+    s: {voice: snare, rate: 20000, dec: 0.08, tone_f: 185, tone: 0.5, crush: 1, len: 0.22, vol: 0.28, gm: 38}
+    h: {voice: hat, dec: 0.012, len: 0.04, vol: 0.06, pan: -0.2, gm: 42}
+    o: {voice: hat, dec: 0.06, len: 0.14, vol: 0.06, pan: -0.2, gm: 46}
+    t: {voice: fm, note: 50, len: 0.3, sweep: [-10, 0.12], alg: 0, ops: [{ratio: 1.5, level: 0.5, dec: 0.1, sus: 0}, {ratio: 1, level: 1, dec: 0.25, sus: 0, rel: 0.05}], vol: 0.4, bus: low, gm: 45}
+    m: {voice: fm, note: 70, len: 0.4, alg: 1, feedback: 0.7, ops: [{ratio: 1.41, level: 0.9, dec: 0.15, sus: 0}, {ratio: 3.3, level: 0.6, dec: 0.1, sus: 0}, {ratio: 1, level: 0.6, dec: 0.2, sus: 0}, {ratio: 1, level: 1, dec: 0.3, sus: 0, rel: 0.1}], vol: 0.12, pan: 0.2, reverb: 0.5, gm: 56}
+    c: {voice: crash, dec: 0.6, len: 1.8, vol: 0.09, gm: 49}
+
+# ================================================================ GM-style 16-bit palette
+lead.gm_square:
+  doc: Clean band-limited square lead with vibrato; the 16-bit take on a chip lead.
+  voice: wave
+  table: pulse
+  dec: 0.2
+  sus: 0.8
+  rel: 0.08
+  vib: 0.25
+  mix: {vol: 0.18, echo: 0.5, reverb: 0.2}
+  gm: 80
+
+lead.gm_saw:
+  doc: Clean saw lead; bright and smooth.
+  extends: lead.gm_square
+  table: saw
+  mix: {vol: 0.15, echo: 0.5, reverb: 0.2, lp: 8000}
+  gm: 81
+
+lead.gm_flute:
+  doc: Breathy sine-ish flute (sine table, slow attack, vibrato); calm, overworld, credits.
+  voice: wave
+  table: sine
+  att: 0.06
+  dec: 0.3
+  sus: 0.85
+  rel: 0.15
+  vib: 0.3
+  vib_rate: 5.0
+  vib_delay: 0.25
+  mix: {vol: 0.24, reverb: 0.5, echo: 0.3}
+  gm: 73
+
+bass.gm_pick:
+  doc: Picked bass (bass table, quick decay).
+  voice: wave
+  table: bass
+  dec: 0.25
+  sus: 0.5
+  rel: 0.05
+  mix: {vol: 0.32, bus: low, duck: 0.3}
+  gm: 34
+
+pad.gm_strings:
+  doc: Band-limited saw strings pad, slow and soft (use with the pad generator).
+  voice: wave
+  table: saw
+  att: 0.35
+  dec: 0.5
+  sus: 0.9
+  rel: 0.6
+  vib: 0.1
+  vib_rate: 4.5
+  mix: {vol: 0.045, reverb: 0.9, lp: 3500}
+  gm: 48
+
+pad.gm_organ:
+  doc: Organ pad (drawbar-style table).
+  extends: pad.gm_strings
+  table: organ
+  att: 0.05
+  rel: 0.2
+  mix: {vol: 0.05, reverb: 0.6, lp: 5000}
+  gm: 16
+
+lead.gm_bell:
+  doc: Bell table with long decay; celesta-like twinkle.
+  voice: wave
+  table: bell
+  dec: 1.0
+  sus: 0.0
+  rel: 0.5
+  mix: {vol: 0.2, reverb: 0.7, pan: 0.2}
+  gm: 8
+
+kit.gm:
+  doc: Cleaner 16-bit-style kit - deeper kick, snappier snare, open hats, toms.
+  pieces:
+    k: {voice: kick, f0: 190, f1: 44, pitch_dec: 0.025, dec: 0.25, click: 0.3, crush: 0, len: 0.4, vol: 0.6, bus: low, gm: 36}
+    s: {voice: snare, rate: 26000, dec: 0.1, tone_f: 200, tone: 0.5, crush: 1, len: 0.25, vol: 0.28, reverb: 0.3, gm: 38}
+    h: {voice: hat, dec: 0.015, len: 0.05, vol: 0.06, pan: -0.2, gm: 42}
+    o: {voice: hat, dec: 0.08, len: 0.2, vol: 0.06, pan: -0.2, gm: 46}
+    t: {voice: tom, vol: 0.4, bus: low, gm: 45}
+    c: {voice: crash, dec: 0.7, len: 2.2, vol: 0.09, reverb: 0.4, gm: 49}
+
+# ================================================================ SFX-style hits (any chip)
+kit.sfx:
+  doc: Sound-effect hits for drama - metal clank, steam, alarm, roar, boom, zap, power-up, explosion.
+  pieces:
+    clank: {voice: clank, vol: 0.12, reverb: 0.6, gm: 56}
+    steam: {voice: hiss, len: 0.8, vol: 0.08, gm: 52}
+    alarm: {voice: siren, from: 76, to: 77, slide: 0.25, len: 0.8, vol: 0.07, width: 0.012, gm: 80}
+    roar: {voice: groan, vol: 0.16, lp: 1800, reverb: 0.3, gm: 87}
+    boom: {voice: kick, f0: 120, f1: 30, pitch_dec: 0.08, dec: 0.6, click: 0.1, crush: 0, len: 1.2, vol: 0.6, bus: low, reverb: 0.4, gm: 35}
+    zap: {voice: siren, from: 96, to: 48, slide: 0.12, duty: 0.25, len: 0.15, sus: 1.0, vol: 0.12, gm: 80}
+    powerup: {voice: pulse, note: 72, len: 0.5, arp: [0, 4, 7, 12, 16, 19], arp_rate: 2, duty: 0.25, dec: 0.3, sus: 0.6, rel: 0.1, vol: 0.14, echo: 0.5, gm: 80}
+    explosion: {voice: crash, rate: 12000, dec: 0.8, len: 2.5, vol: 0.14, lp: 3000, reverb: 0.6, gm: 49}
+    eerie: {voice: eerie, vol: 0.05, reverb: 0.8, gm: 97}

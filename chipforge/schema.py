@@ -130,6 +130,8 @@ CHANNEL_SPEC: dict[str, F] = {
     "transpose": F("int", "Semitone transpose for the whole channel.", default=0, min=-48, max=48),
     "octave": F("int", "Default MML octave for this channel.", min=0, max=8),
     "gm": F("int", "General MIDI program for MIDI export (overrides preset).", min=0, max=127),
+    "osc": F("str", "Oscillator quality: naive (aliasing, hardware-like) or clean (band-limited). Default from chip/mode.",
+             choices=["naive", "clean"]),
 }
 
 PATTERN_SPEC: dict[str, F] = {
@@ -412,7 +414,7 @@ def validate(data: Any, lines: dict | None = None, file: str | None = None) -> S
             v.err(("channels", name, "preset"), f"unknown preset {c['preset']!r}",
                   hint=(f"did you mean '{near}'? " if near else "") + "run `chipforge presets` for the list")
         channels[name] = Channel(name, c["preset"], c["vol"], c["pan"], c["layer"], c["transpose"],
-                                 c.get("octave"), {k: c[k] for k in ("echo", "reverb", "duck", "lp", "hp", "gm") if k in c})
+                                 c.get("octave"), {k: c[k] for k in ("echo", "reverb", "duck", "lp", "hp", "gm", "osc") if k in c})
 
     # patterns
     steps_per_bar = int(beats * 16 / unit)
@@ -574,9 +576,49 @@ def validate(data: Any, lines: dict | None = None, file: str | None = None) -> S
         "predelay": F("num", "Seconds before the reverb starts.", default=0.012, min=0, max=0.2),
     }, ("mix", "reverb"))
 
-    return Song(top["title"], top["cue"], float(top["tempo"]), beats, unit, key_root, key_mode, top["chip"],
+    song = Song(top["title"], top["cue"], float(top["tempo"]), beats, unit, key_root, key_mode, top["chip"],
                 top["mode"], int(top["seed"]), top.get("loudness"), bool(loop), loop_from, float(top["swing"]),
                 int(top["sr"]), amb, mix, channels, patterns, arrangement, file, data)
+    if song.mode == "authentic":
+        check_authentic(song, v)
+    return song
+
+
+def check_authentic(song: Song, v: "_V"):
+    """Authentic mode: every channel must fit a hardware slot of the chip, and no polyphony."""
+    from . import chips
+    prof = chips.get(song.chip)
+    used: dict[str, list[str]] = {}
+    for name, ch in song.channels.items():
+        preset = _presets.get(ch.preset)
+        if preset["kind"] == "kit":
+            voices = ["noise"]
+        elif preset.get("voice") == "stack":
+            voices = [l["voice"] for l in preset["layers"]]
+        else:
+            voices = [preset["voice"]]
+        for voice in voices:
+            slot = chips.SLOT.get(voice)
+            target = None
+            for s_name in prof.voices:
+                if s_name == slot or slot in chips.ACCEPTS.get(s_name, set()):
+                    target = s_name
+                    break
+            if slot is None or target is None:
+                v.err(("channels", name, "preset"),
+                      f"preset {ch.preset!r} uses a {voice} voice, which the {song.chip} has no channel for in authentic mode",
+                      hint="pick a preset built from " + ", ".join(prof.voices) + " voices, or set `mode: enhanced`")
+            used.setdefault(target, []).append(name)
+    for slot, names in used.items():
+        if len(names) > prof.voices[slot]:
+            v.err(("channels",), f"authentic {song.chip} has {prof.voices[slot]} {slot} channel(s) but "
+                                 f"{len(names)} are used: {', '.join(names)}",
+                  hint="remove or merge channels, or set `mode: enhanced`")
+    for pname, pat in song.patterns.items():
+        for ch, lane in pat.lanes.items():
+            if isinstance(lane, dict) and lane.get("gen") == "pad":
+                v.err(("patterns", pname, ch), "the pad generator is polyphonic; authentic chips play one note per channel",
+                      hint="use arp or drone, or set `mode: enhanced`")
 
 
 def _check_at(v: _V, at, bars: int, steps_per_bar: int, path: tuple):

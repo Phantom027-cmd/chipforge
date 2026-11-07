@@ -31,8 +31,9 @@ chipforge presets                                  # instrument library
 
 ## Status
 
-Milestone 1 of 8 (core engine + format). Coming: more chip profiles and presets, LUFS mastering,
-OGG/MP3 + loop tags, the `analyze` "ears" module, MCP server, review page, templates and the cue guide.
+Milestone 2 of 8 (chip profiles + presets: NES, Game Boy, SID, FM, GM; 66 presets). Coming: LUFS
+mastering and more ambience beds, MP3 + stems polish, the `analyze` "ears" module, MCP server,
+review page, templates and the cue guide.
 
 ## Benchmark
 
